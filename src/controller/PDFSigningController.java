@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
-import model.PDFSigningConfig;
+import model.PDFSignerModel;
 import model.certificates.Certificate;
 import model.signing.PDFSigningOptions;
 import model.signing.Signer;
@@ -20,12 +20,12 @@ import java.io.File;
 import java.io.IOException; 
 
 public class PDFSigningController extends Controller {
-	PDFSigningConfig cfg;
+	PDFSignerModel cfg;
 	PDFSigningView view;
 
 	private File[] selectedFiles = {};
 	
-	public PDFSigningController(PDFSigningConfig cfg, PDFSigningView view) {
+	public PDFSigningController(PDFSignerModel cfg, PDFSigningView view) {
 		this.cfg = cfg;
 		this.view = view;
 		

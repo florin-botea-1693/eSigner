@@ -21,11 +21,9 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import controller.AppSettingsController;
-import controller.Controller;
 import controller.PDFSigningController;
 import model.AppSettings;
-import model.PDFSigningConfig;
+import model.PDFSignerModel;
 import model.certificates.MSCAPICertificatesHolder;
 import model.signing.PDFSigningOptions;
 import view.AppSettingsView;
@@ -126,7 +124,7 @@ public class App {
 		PDFSigningOptions signingOptions = new PDFSigningOptions();
 		signingOptions.loadFromAppSettings(settings);
 		
-		PDFSigningConfig model = new PDFSigningConfig(certificatesHolder, signingOptions);
+		PDFSignerModel model = new PDFSignerModel(certificatesHolder, signingOptions);
 		PDFSigningView view = new PDFSigningView(model);
 		controller = new PDFSigningController(model, view);
 		// view listen to model

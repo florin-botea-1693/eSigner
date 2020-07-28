@@ -17,7 +17,7 @@ import model.certificates.Certificate;
  * 
  */
 
-public class SignatureAspectConfig {
+public final class SignatureAspectConfig {
 	
 	private Certificate certificate;
 	private boolean hasSignatureImage;

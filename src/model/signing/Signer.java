@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import model.PDFSigningConfig;
+import model.PDFSignerModel;
 
 public class Signer {
 
@@ -18,7 +18,7 @@ public class Signer {
 	 * @param file - fisierul sursa pentru semnare
 	 */
 	
-	public static void sign(PDFSigningConfig cfg, File file) throws FileNotFoundException, IOException {
+	public static void sign(PDFSignerModel cfg, File file) throws FileNotFoundException, IOException {
 		// case case case
 		if (true)
 			new PDFVisibleSigner(cfg.getCertificatesHolder(), cfg.getPadesService(), cfg.getPadesParameters(), cfg.getVisibleSignatureWrapper()).sign(file);;

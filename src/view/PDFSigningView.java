@@ -14,7 +14,7 @@ import javax.swing.event.DocumentListener;
 
 import org.w3c.dom.events.DocumentEvent;
 
-import model.PDFSigningConfig;
+import model.PDFSignerModel;
 import model.certificates.Certificate;
 
 import javax.swing.JComboBox;
@@ -129,7 +129,7 @@ public class PDFSigningView extends JPanel {
 	/**
 	 * Create the panel.
 	 */
-	public PDFSigningView(PDFSigningConfig signingConfig) {
+	public PDFSigningView(PDFSignerModel signingConfig) {
 		
 		//setPreferredSize(new Dimension(600, 600));
 		

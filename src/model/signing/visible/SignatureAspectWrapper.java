@@ -25,6 +25,17 @@ import text.FitTextInRectangle;
 
 public class SignatureAspectWrapper {
 	
+	
+	/******
+	
+	
+	
+	o voi sterge, dar mai las ca sa am codul
+	
+	
+	********/
+	
+	
 	private SignatureImageParameters sip;
 	//private SignatureImageTextParameters text;
 	private SignatureImage signatureImage;

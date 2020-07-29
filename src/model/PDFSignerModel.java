@@ -42,9 +42,10 @@ import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import model.certificates.Certificate;
 import model.certificates.CertificatesHolder;
 import model.signing.PDFSigningOptions;
+import model.signing.PDFVisibleSigning;
+import model.signing.SigningMode;
 import model.signing.visible.SignatureAspect;
-import model.signing.visible.SignatureAspectConfig;
-import model.signing.visible.SignatureImagePWrapper;
+import model.signing.visible.SignatureAspectDelegate;
 
 /*
  * PDFSigner este instantiat in momentul in care utilizatorul intra pe semnare PDF. 
@@ -57,10 +58,10 @@ public final class PDFSignerModel {
 	private CertificatesHolder certificatesHolder;
 	private PAdESService service;
 	private PAdESSignatureParameters padesParameters = new PAdESSignatureParameters();
-	private SignatureAspectConfig signatureAspectConfig;
-	private SignatureAspectDelegate signatureAspectDelegate = new SignatureAspectDelegate();
-	private SigningModeDelegate signingModeDelegate = new SigningModeDelegate();
+	private SignatureAspect signatureAspect; // signature aspect nu se va modifica niciodata in momentul semnarii, sau pe meniul de semnare, ci doar in setari
 	
+	
+	/* in baza membrilor de mai jos voi sti in getMode ce class sa intorc */
 	private boolean isVisibleSignature = false;
 	private boolean isRealSignature = false;
 	private int signingPage = 1;
@@ -68,6 +69,18 @@ public final class PDFSignerModel {
 	// nu cred ca voi avea neaparat options aici... nu prea ar avea rost... trec options doar ca sa ma ajut de el sa construiesc parametrii
 	private PDFSigningOptions signingOptions;
 
+	public CertificatesHolder getCertificatesHolder() {return certificatesHolder;}
+	public PAdESSignatureParameters getPadesParameters() {return padesParameters;}
+	public PDFSigningOptions getSigningOptions() {return signingOptions;}
+	public PAdESService getPadesService() {return service;}
+	public List<Certificate> getCertificates() {return certificatesHolder.getCertificates();}
+	
+	
+	/**
+	 * CONSTRUCTOR - creates pdf signing model, a wrapper around multiple similar signing modes that needs same parameters
+	 * @param certificatesHolder
+	 * @param options - a SQL-lite poate
+	 */
 	public PDFSignerModel(CertificatesHolder certificatesHolder, PDFSigningOptions options) {
 		this.certificatesHolder = certificatesHolder;
 		this.signingOptions = options;
@@ -75,87 +88,44 @@ public final class PDFSignerModel {
 		initFromOptions(options);
 	}
 	
-	public void sign(File file) {
-		signingModeDelegate.getMode("pdf.visible.single-page", this).performSign(file);
+	public void sign(File file) throws FileNotFoundException, IOException {
+		getSigningMode("pdf.visible.single-page").performSign(file);
+	}
+	private SigningMode getSigningMode(String m) {
+		return new PDFVisibleSigning(certificatesHolder, service, padesParameters, signatureAspect);
 	}
 	
-	public List<Certificate> getCertificates() {
-		return this.certificatesHolder.getCertificates();
-	}
+	/* SETTERS */
 	
 	public void setSigningCertificate(Certificate cert) {
 		padesParameters.setSigningCertificate(cert.getPrivateKey().getCertificate());
 		padesParameters.setCertificateChain(cert.getPrivateKey().getCertificateChain());
 		certificatesHolder.selectCertificate(cert);
-		visualSignature.setCertificate(cert);
+		signatureAspect.setCertificate(cert);
 	}
 	
 	public void setSize(String size) {
-		visualSignature.setSize(size);
+		signatureAspect.setSize(size);
 	}
-	
-	public SignatureImagePWrapper getVisibleSignatureWrapper() {
-		return this.visualSignature;
-	}
-	
-	public CertificatesHolder getCertificatesHolder() {
-		return this.certificatesHolder;
-	}
-	
-	public PAdESSignatureParameters getPadesParameters() {
-		return this.padesParameters;
-	}
-	
-	public PDFSigningOptions getSigningOptions() {
-		return this.signingOptions;
-	}
-	
-	public PAdESService getPadesService() {
-		return this.service;
-	}
-	
+
 	public void setVisibleSignature(boolean b) {
 		isVisibleSignature = b;
 	}
-
-	public void initFromOptions(PDFSigningOptions options) {
-		Certificate cert = certificatesHolder.getSelectedCertificate();
-		// no certificate
-		CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
-		service = new PAdESService(commonCertificateVerifier);
-		service.setPdfObjFactory(new PdfBoxNativeObjectFactory());
-		// set page, setposition, setvisible, add extra data to signatureDesign (font, size, signatureImage)
-		
-		padesParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
-		padesParameters.setReason("reason");
-		padesParameters.setContactInfo("setContactInfo");
-		
-		if (cert == null) return;
-		padesParameters.setSigningCertificate(cert.getPrivateKey().getCertificate());
-		padesParameters.setCertificateChain(cert.getPrivateKey().getCertificateChain());
-	}
 	
-	/**
-	 * intoarce tot ce tine de grafica semnaturii, width, height, etc. si va fi folosit in PadesParameters
-	 * @return SignatureAspect used in padesParameters.setImageParameter
-	 */
-	
-	public SignatureAspect getSignatureAspect() {
-		return signatureAspectDelegate.getAspect(signatureAspectConfig);
-	}
-
-	public void setVisibleSN(boolean selected) {
-		//
+	public void setVisibleSN(boolean b) {
+		signatureAspect.setVisibleSerialNumber(b);
 	}
 
 	public void setReason(String text, boolean visible) {
 		padesParameters.setReason(text);
-		visualSignature.setReason(text, visible);
+		String visibleReason = visible ? text : null;
+		signatureAspect.setReason(visibleReason);
 	}
 
 	public void setLocation(String text, boolean visible) {
 		padesParameters.setLocation(text);
-		visualSignature.setLocation(text, visible);
+		String visibleLocation = visible ? text : null;
+		signatureAspect.setLocation(visibleLocation);
 	}
 
 	public void setIsRealSignature(boolean b) {
@@ -164,7 +134,30 @@ public final class PDFSignerModel {
 
 	public void setPage(int i) {
 		signingPage = i;
+		signatureAspect.setPage(i);
 	}
-	
 
+	public void initFromOptions(PDFSigningOptions options) {
+		Certificate cert = certificatesHolder.getSelectedCertificate();
+		// no certificate
+		CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
+		service = new PAdESService(commonCertificateVerifier);
+		service.setPdfObjFactory(new PdfBoxNativeObjectFactory());
+		
+		signatureAspect = SignatureAspectDelegate.getAspect("BasicSignatureAspect");
+		/* configure aspect based on app config data */
+		setPage(1);
+		setReason("asa vreau eu", true);
+		setLocation("la DigiSait", true);
+		signatureAspect.setVisibleSerialNumber(true);
+		
+		/* configure signature presentation data */
+		padesParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
+		if (cert == null) return;
+		padesParameters.setSigningCertificate(cert.getPrivateKey().getCertificate());
+		padesParameters.setCertificateChain(cert.getPrivateKey().getCertificateChain());
+		certificatesHolder.selectCertificate(cert);
+		/* !!cel mai important!! nu pot construi grafica semnatura fara un certificat */
+		signatureAspect.setCertificate(cert);
+	}
 }

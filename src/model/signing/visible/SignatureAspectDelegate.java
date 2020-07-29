@@ -1,12 +1,8 @@
 package model.signing.visible;
 
 public final class SignatureAspectDelegate {
-	private String aspectType;
-	private SignatureAspect aspect;
-	
-	public SignatureAspect getAspect(String at, SignatureAspectConfig cfg) {
+	public static SignatureAspect getAspect(String string) {
 		// if at != aspectType, switch -> 
-		aspect = new BasicSignatureAspect();
-		return aspect.withConfig(cfg);
+		return new BasicSignatureAspect();
 	}
 }

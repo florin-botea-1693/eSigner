@@ -46,4 +46,9 @@ public class Certificate {
 		}
 		return name;
 	}
+
+	public String getSerialNumber() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

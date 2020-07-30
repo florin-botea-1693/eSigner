@@ -3,6 +3,9 @@ package model.signing.visible;
 import org.apache.pdfbox.pdmodel.PDPage;
 
 import eu.europa.esig.dss.model.pades.SignatureImageParameters;
+import eu.europa.esig.dss.model.pades.SignatureImageParameters.VisualSignatureAlignmentHorizontal;
+import eu.europa.esig.dss.model.pades.SignatureImageParameters.VisualSignatureAlignmentVertical;
+import eu.europa.esig.dss.model.pades.SignatureImageParameters.VisualSignaturePagePlacement;
 import model.certificates.Certificate;
 
 /*
@@ -11,7 +14,7 @@ import model.certificates.Certificate;
 
 public abstract class SignatureAspect {
 	private boolean needsRedraw = true;
-	private SignatureImageParameters sip;
+	private SignatureImageParameters sip = new SignatureImageParameters();
 	
 	protected int page = 1;
 	protected PDPage pdPage = null;
@@ -95,5 +98,11 @@ public abstract class SignatureAspect {
 			break;
 		}
 		this.needsRedraw = true;
+	}
+	public void setPosition() {
+		System.out.println("fooo");
+		this.sip.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.CENTER);
+		this.sip.setAlignmentVertical(VisualSignatureAlignmentVertical.MIDDLE);
+		this.sip.setPagePlacement(VisualSignaturePagePlacement.ALL_PAGES);
 	}
 }

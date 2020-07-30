@@ -80,7 +80,7 @@ public class PDFVisibleSigning implements SigningMode {// class asta se instanti
 		PDPage page = pdDocument.getPage(signatureAspect.getPage() - 1);
 		signatureAspect.setPage(1, page);
 		/* adaugam parametri vizuali semnaturii pades. getSignatureImageParameters() va da refresh la data din semnatura */
-		padesParameters.setImageParameters(signatureAspect.getSignatureImageParameters());
+		padesParameters.setImageParameters(signatureAspect.getSIP());
 		ToBeSigned dataToSign = service.getDataToSign(toSignDocument, padesParameters);
 		SignatureValue signatureValue = token.sign(dataToSign, padesParameters.getDigestAlgorithm(), cert.getPrivateKey());
 		DSSDocument signedDocument = service.signDocument(toSignDocument, padesParameters, signatureValue);

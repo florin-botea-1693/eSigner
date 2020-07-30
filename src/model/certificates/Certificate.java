@@ -14,7 +14,7 @@ public class Certificate {
 	
 	@Override
 	public String toString() {
-    	String userName = this.getName();
+    	String userName = this.getHolderNameName();
     	String sn = this.privateKey.getCertificate().getCertificate().getSerialNumber().toString(16);
     	SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
     	String expirationDate = dateFormat.format(this.privateKey.getCertificate().getCertificate().getNotAfter());
@@ -30,7 +30,7 @@ public class Certificate {
 		return privateKey.getCertificate().getCertificate().getSubjectDN();
 	}
 	
-	public String getName() {
+	public String getHolderNameName() {
 		Principal principal = getPrincipal();
 		int start = principal.getName().indexOf("CN");
 		String tmpName, name = "";
@@ -48,7 +48,6 @@ public class Certificate {
 	}
 
 	public String getSerialNumber() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.privateKey.getCertificate().getCertificate().getSerialNumber().toString(16);
 	}
 }

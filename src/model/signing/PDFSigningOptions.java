@@ -1,6 +1,12 @@
 package model.signing;
 
 public class PDFSigningOptions {
+	
+	/*
+	 * 
+	 * E POSIBIL SA O STERG
+	 * 
+	 */
 
 	private boolean isVisibleSignature = true;
 	private boolean isVisibleLocation = false;

@@ -35,26 +35,26 @@ public class FitTextInRectangle {
 		while (textHeight <= heightLimit) {
 			resultText = tmpResultText;
 			
-			System.out.println("----------------font size " + (fontSize+1) + " " + fontName + "-----------------");
-			System.out.println("----------------last height was " + textHeight + " and limit is " + heightLimit);
+			//System.out.println("----------------font size " + (fontSize+1) + " " + fontName + "-----------------");
+			//System.out.println("----------------last height was " + textHeight + " and limit is " + heightLimit);
 			Font _font = new Font(fontName, fontStyle, fontSize); // in avans
 			fm = jLabel.getFontMetrics(_font);
 			String[] result = new String[rows.length];
 			for (int i=0; i<rows.length; i++) {
 				result[i] = this.formatTextWidth(rows[i], widthLimit, delimiters);
 				for (String s : result[i].split("\n")) {
-					System.out.println("row width____" + fm.stringWidth(s) + " and limit is " + widthLimit);
+					//System.out.println("row width____" + fm.stringWidth(s) + " and limit is " + widthLimit);
 				}
 			}
 			tmpResultText = String.join("\n", result);
 			int countRows = tmpResultText.split("\n").length +1;
 			double rowHeight = fm.getHeight();
 			textHeight = (int) (rowHeight * countRows);
-			System.out.println("----------------height of " + textHeight + "reached and limit is " + heightLimit);
+			//System.out.println("----------------height of " + textHeight + "reached and limit is " + heightLimit);
 			fontSize++;
 		}
 		ArrayList<Object> response = new ArrayList<Object>();
-		response.add(fontSize-1);
+		response.add(fontSize-2);
 		response.add(resultText);
 		return response;
 	}
@@ -64,12 +64,12 @@ public class FitTextInRectangle {
 		String[] rows = text.split("\n");
 		fm = jLabel.getFontMetrics(font);
 		int biggestRowLength = 1;
-		System.out.println("-------------" + rows.length);
+		//System.out.println("-------------" + rows.length);
 		for (String row : rows) {
 			int tmp = fm.stringWidth(row);
-			System.out.println(tmp);
+			//System.out.println(tmp);
 			biggestRowLength = biggestRowLength < tmp ? tmp : biggestRowLength;
-			System.out.println("-------------" + biggestRowLength);
+			//System.out.println("-------------" + biggestRowLength);
 		}
 		if (rows.length * fm.getHeight() > biggestRowLength) return text;// daca incalca ratia
 		
@@ -83,18 +83,18 @@ public class FitTextInRectangle {
 				preResult[i] = this.formatTextWidth(rows[i], biggestRowLength, delimiters);
 			}
 			if ( String.join("\n", preResult).split("\n").length * fm.getHeight() <= requiredHeight ) {
-				System.out.println("I should continue");
+				//System.out.println("I should continue");
 				result = String.join("\n", preResult);
 			} 
 			else if (biggestRowLength <= 0) {
-				System.out.println("I should stop");
+				//System.out.println("I should stop");
 				resultExcededRatio = true;
 			}
 			else {
-				System.out.println("I should stop");
+				//System.out.println("I should stop");
 				resultExcededRatio = true;
 			}
-			System.out.println("-----------------------------while----------------------------" + biggestRowLength + "\n" + result);
+			//System.out.println("-----------------------------while----------------------------" + biggestRowLength + "\n" + result);
 		}
 		return result;
 	}
@@ -104,13 +104,13 @@ public class FitTextInRectangle {
 	}
 	
 	private String formatTextWidthRecursion(String dest, String chunk, String src, int w, String[] delim) {
-		 System.out.println("src is "+ src + " and " + fm.stringWidth(src));
+		 //System.out.println("src is "+ src + " and " + fm.stringWidth(src));
 		maxI++;
 		if (maxI > 100) {
 			//return null;
 		}
 		String sep = dest.length() > 0 ? "\n" : "";
-		System.out.println("dest -- " + dest + " chunk -- " + chunk + " src -- " + src);
+		//System.out.println("dest -- " + dest + " chunk -- " + chunk + " src -- " + src);
 		// sursa e goala -- trolling/ sursa epuizata
 		if (chunk.length() == 0 && src.length() == 0)
 			return dest;
@@ -150,7 +150,7 @@ public class FitTextInRectangle {
 	public static void main(String[] args) {
 		FitTextInRectangle app = new FitTextInRectangle();
 		String f = app.formatTextInRatio("Botea Florin cel super tare si destept si frumos si cel mai cel", new Font("arial", Font.BOLD, 8), 400, 400);
-		System.out.println(f);
+		//System.out.println(f);
 		//String str = "Digitally Signed by Florin Botea\n"+"Reason: semnez acest document ca asa vreau eu\n"+"Location: la mine acasa";
 		//ArrayList<Object> result = app.fit(str, 70, 100, new Font("arial", Font.PLAIN, 1));
 	}

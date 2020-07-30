@@ -22,12 +22,9 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import controller.PDFSigningController;
-import model.AppSettings;
 import model.PDFSignerModel;
 import model.certificates.MSCAPICertificatesHolder;
 import model.signing.PDFSigningOptions;
-import view.AppSettingsView;
-import view.MainMenuView;
 import view.PDFSigningView;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
@@ -63,7 +60,7 @@ public class App {
 					app.frame.setVisible(true);
 					
 					// case 1
-					app.goToMainMenu();
+					app.goToPDFSign();
 					
 					
 				} catch (Exception e) {
@@ -104,7 +101,7 @@ public class App {
 		});
 		settings.add(generalSettingsBtn);
 	}
-
+/*
 	public void goToMainMenu() {
 		view = new MainMenuView();
 		
@@ -117,12 +114,12 @@ public class App {
 		frame.setContentPane((Container) view);
 		frame.repaint();
 	}
-	
+	*/
 	public void goToPDFSign() {
 		MSCAPICertificatesHolder certificatesHolder = new MSCAPICertificatesHolder();
-		AppSettings settings = AppSettings.getInstance();
+		//AppSettings settings = AppSettings.getInstance();
 		PDFSigningOptions signingOptions = new PDFSigningOptions();
-		signingOptions.loadFromAppSettings(settings);
+		//signingOptions.loadFromAppSettings(settings);
 		
 		PDFSignerModel model = new PDFSignerModel(certificatesHolder, signingOptions);
 		PDFSigningView view = new PDFSigningView(model);

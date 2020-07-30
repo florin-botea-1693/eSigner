@@ -88,6 +88,12 @@ public final class PDFSignerModel {
 		initFromOptions(options);
 	}
 	
+	/**
+	 * MAIN METHOD
+	 * @param file
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
 	public void sign(File file) throws FileNotFoundException, IOException {
 		getSigningMode("pdf.visible.single-page").performSign(file);
 	}
@@ -136,6 +142,10 @@ public final class PDFSignerModel {
 		signingPage = i;
 		signatureAspect.setPage(i);
 	}
+	
+	public void setSignaturePosition() {
+		signatureAspect.setPosition();
+	}
 
 	public void initFromOptions(PDFSigningOptions options) {
 		Certificate cert = certificatesHolder.getSelectedCertificate();
@@ -145,6 +155,9 @@ public final class PDFSignerModel {
 		service.setPdfObjFactory(new PdfBoxNativeObjectFactory());
 		
 		signatureAspect = SignatureAspectDelegate.getAspect("BasicSignatureAspect");
+		
+		System.out.println(signatureAspect);
+		
 		/* configure aspect based on app config data */
 		setPage(1);
 		setReason("asa vreau eu", true);

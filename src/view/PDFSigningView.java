@@ -4,9 +4,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 
-import net.miginfocom.swing.MigLayout;
-import view.contracts.HasBasicSigningOptions;
-
 import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -16,6 +13,7 @@ import org.w3c.dom.events.DocumentEvent;
 
 import model.PDFSignerModel;
 import model.certificates.Certificate;
+import net.miginfocom.swing.MigLayout;
 
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;

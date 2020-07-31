@@ -14,6 +14,8 @@ import model.certificates.Certificate;
 
 public abstract class SignatureAspect {
 	private boolean needsRedraw = true;
+	private SignaturePosition signaturePosition = SignaturePosition.TOP_LEFT; // default pentru a nu cauza erori
+	private SignatureSize signatureSize = SignatureSize.MEDIUM;
 	private SignatureImageParameters sip = new SignatureImageParameters();
 	
 	protected int page = 1;
@@ -99,10 +101,19 @@ public abstract class SignatureAspect {
 		}
 		this.needsRedraw = true;
 	}
-	public void setPosition() {
-		System.out.println("fooo");
+	
+	public void setPosition(SignaturePosition position) {
+		this.signaturePosition = position;
+		// switch aici
 		this.sip.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.CENTER);
 		this.sip.setAlignmentVertical(VisualSignatureAlignmentVertical.MIDDLE);
-		this.sip.setPagePlacement(VisualSignaturePagePlacement.ALL_PAGES);
 	}
+	public SignaturePosition getSignaturePosition() {
+		return this.signaturePosition;
+	}
+	public SignatureSize getSize() {
+		return this.signatureSize;
+	}
+	
+	
 }

@@ -8,6 +8,7 @@ import java.awt.event.ItemListener;
 import model.PDFSignerModel;
 import model.certificates.Certificate;
 import model.signing.PDFSigningOptions;
+import model.signing.visible.SignaturePosition;
 import view.PDFSigningView;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
@@ -29,6 +30,7 @@ public class PDFSigningController {
 		this.view = view;
 		
 		addEventsListeners();
+		syncData();
 	}
 	
 	public void callSigningProcess() {
@@ -187,19 +189,16 @@ public class PDFSigningController {
 		// position
 		view.getPosition().addActionListener (new ActionListener () {
 		    public void actionPerformed(ActionEvent e) {
-		    	switch (view.getPosition().getSelectedIndex()) {
-		    		case 0: // first
-		    			model.setSignaturePosition();
-		    		break;
-		    		case 1: // last
-		    		// position
-		    		break;
-		    		case 2: // all
-		    		// position
-		    		break;	
-		    	}
+		    	model.setSignaturePosition((SignaturePosition) view.getPosition().getSelectedItem());
 		    }
 		});
 	}
 
+	//====================================||
+	// DON'T JUDGE ME
+	//====================================||
+	public void syncData() {
+		view.getPosition().setSelectedIndex(model.getSignaturePosition().index);
+		view.getSignatureSize().setSelectedIndex(model.getSignatureSize().index);
+	}
 }

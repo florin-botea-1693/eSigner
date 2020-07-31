@@ -46,6 +46,8 @@ import model.signing.PDFVisibleSigning;
 import model.signing.SigningMode;
 import model.signing.visible.SignatureAspect;
 import model.signing.visible.SignatureAspectDelegate;
+import model.signing.visible.SignaturePosition;
+import model.signing.visible.SignatureSize;
 
 /*
  * PDFSigner este instantiat in momentul in care utilizatorul intra pe semnare PDF. 
@@ -143,8 +145,19 @@ public final class PDFSignerModel {
 		signatureAspect.setPage(i);
 	}
 	
-	public void setSignaturePosition() {
-		signatureAspect.setPosition();
+	public void setSignaturePosition(SignaturePosition position) {
+		signatureAspect.setPosition(position);
+	}
+	
+	//===============================================||
+	// GETTERS FOR SIGNATURE ASPECT AND POSITION
+	//===============================================||
+	public SignaturePosition getSignaturePosition() {
+		return signatureAspect.getSignaturePosition();
+	}
+	
+	public SignatureSize getSignatureSize() {
+		return signatureAspect.getSize();
 	}
 
 	public void initFromOptions(PDFSigningOptions options) {

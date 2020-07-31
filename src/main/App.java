@@ -25,6 +25,7 @@ import controller.PDFSigningController;
 import model.PDFSignerModel;
 import model.certificates.MSCAPICertificatesHolder;
 import model.signing.PDFSigningOptions;
+import model.signing.visible.SignaturePosition;
 import view.PDFSigningView;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
@@ -52,7 +53,7 @@ public class App {
 		catch (ClassNotFoundException e) {e.printStackTrace();}
 		catch (InstantiationException e) {e.printStackTrace();}
 		catch (IllegalAccessException e) {e.printStackTrace();}
-		
+
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {

@@ -13,6 +13,8 @@ import org.w3c.dom.events.DocumentEvent;
 
 import model.PDFSignerModel;
 import model.certificates.Certificate;
+import model.signing.visible.SignaturePosition;
+import model.signing.visible.SignatureSize;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.JComboBox;
@@ -35,6 +37,8 @@ import javax.swing.event.ChangeEvent;
 
 public class PDFSigningView extends JPanel {
 
+	private PDFSignerModel signingModel;
+	
 	private JTextField choosedFilesInput;
 	private JButton chooseFilesButton;
 	private JComboBox certificateSelector;
@@ -56,78 +60,30 @@ public class PDFSigningView extends JPanel {
 	private JCheckBox visibleSN;
 	private JLabel snLabel;
 	
-	public JTextField getChoosedFilesInput() {
-		return choosedFilesInput;
-	}
-
-	public JButton getChooseFilesButton() {
-		return chooseFilesButton;
-	}
-
-	public JComboBox getCertificateSelector() {
-		return certificateSelector;
-	}
-
-	public JButton getPerformSignButton() {
-		return performSignButton;
-	}
-
-	public JTextField getSigningReason() {
-		return signingReason;
-	}
-
-	public JTextField getSigningLocation() {
-		return signingLocation;
-	}
-
-	public JComboBox getVisibility() {
-		return visibility;
-	}
-
-	public JCheckBox getRealSignature() {
-		return realSignature;
-	}
-
-	public JComboBox getSigningPage() {
-		return signingPage;
-	}
-
-	public JTextField getCustomPage() {
-		return customPage;
-	}
-
-	public JComboBox getSignatureSize() {
-		return size;
-	}
-
-	public JComboBox getPosition() {
-		return position;
-	}
-
-	public JTextArea getSigningLog() {
-		return signingLog;
-	}
-
-	public JCheckBox getVisibleReason() {
-		return visibleReason;
-	}
-
-	public JCheckBox getVisibleLocation() {
-		return visibleLocation;
-	}
-
-	public JCheckBox getVisibleSN() {
-		return visibleSN;
-	}
-
-	public JLabel getSnLabel() {
-		return snLabel;
-	}
+	public JTextField getChoosedFilesInput() {return choosedFilesInput;}
+	public JButton getChooseFilesButton() {return chooseFilesButton;}
+	public JComboBox getCertificateSelector() {return certificateSelector;}
+	public JButton getPerformSignButton() {return performSignButton;}
+	public JTextField getSigningReason() {return signingReason;}
+	public JTextField getSigningLocation() {return signingLocation;}
+	public JComboBox getVisibility() {return visibility;}
+	public JCheckBox getRealSignature() {return realSignature;}
+	public JComboBox getSigningPage() {return signingPage;}
+	public JTextField getCustomPage() {return customPage;}
+	public JComboBox getSignatureSize() {return size;}
+	public JComboBox getPosition() {return position;}
+	public JTextArea getSigningLog() {return signingLog;}
+	public JCheckBox getVisibleReason() {return visibleReason;}
+	public JCheckBox getVisibleLocation() {return visibleLocation;}
+	public JCheckBox getVisibleSN() {return visibleSN;}
+	public JLabel getSnLabel() {return snLabel;}
 	
 	/**
 	 * Create the panel.
 	 */
-	public PDFSigningView(PDFSignerModel signingConfig) {
+	public PDFSigningView(PDFSignerModel signingModel) {
+		
+		this.signingModel = signingModel;
 		
 		//setPreferredSize(new Dimension(600, 600));
 		
@@ -143,7 +99,7 @@ public class PDFSigningView extends JPanel {
 		chooseFilesButton = new JButton("PDF(s) to sign");
 		add(chooseFilesButton, "cell 3 0 2 1,alignx right");
 		
-		certificateSelector = new JComboBox(signingConfig.getCertificates().toArray());
+		certificateSelector = new JComboBox(signingModel.getCertificates().toArray());
 		add(certificateSelector, "cell 0 1 5 1,growx");
 		
 		//add(new JSeparator(SwingConstants.HORIZONTAL), "cell 7 1");
@@ -191,10 +147,10 @@ public class PDFSigningView extends JPanel {
 		lblNewLabel = new JLabel("Aspect and position");
 		add(lblNewLabel, "cell 0 9");
 		
-		size = new JComboBox(new String[]{"Small", "Medium", "Large"});
+		size = new JComboBox(SignatureSize.values());
 		add(size, "cell 0 10,growx");
 		
-		position = new JComboBox(new String[]{"Top-Left", "Top-Center", "Top-Right"});
+		position = new JComboBox(SignaturePosition.values());
 		add(position, "cell 1 10,growx");
 		
 		performSignButton = new JButton("Sign");

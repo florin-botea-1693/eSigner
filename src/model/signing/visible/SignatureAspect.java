@@ -14,21 +14,19 @@ import model.certificates.Certificate;
 
 public abstract class SignatureAspect {
 	private boolean needsRedraw = true;
-	private SignaturePosition signaturePosition = SignaturePosition.TOP_LEFT; // default pentru a nu cauza erori
-	private SignatureSize signatureSize = SignatureSize.MEDIUM;
-	private SignatureImageParameters sip = new SignatureImageParameters();
 	
-	protected int page = 1;
-	protected PDPage pdPage = null;
+	protected Certificate cert;
+	private SignatureImageParameters sip = new SignatureImageParameters();
+	private SignaturePosition signaturePosition;
+	private SignatureSize signatureSize;
 	protected boolean isVisibleSerialNumber = false;
 	protected String reason = null;
 	protected String location = null;
-	protected Certificate cert = null; 
 	
 	abstract protected void refresh(); // refresh date
 	abstract protected void reDraw();
 	
-	public int getPage() {return this.page;}
+	public int getPage() {return this.sip.getPage();}
 	
 	protected void setNeedsRedraw(boolean b) {
 		needsRedraw = b;
@@ -54,14 +52,8 @@ public abstract class SignatureAspect {
 	//================================||
 	// ALTE METODE MARUNTE 
 	//================================||
-
-	public void setPage(int i, PDPage page) {
-		this.page = i;
-		pdPage = page;
-	}
-
 	public void setPage(int i) {
-		page = i;
+		this.sip.setPage(i);
 	}
 
 	public void setReason(String string) {
@@ -84,17 +76,18 @@ public abstract class SignatureAspect {
 		this.needsRedraw = true;
 	}
 
-	public void setSize(String size) {
+	public void setSize(SignatureSize size) {
+		this.signatureSize = size;
 		switch (size) {
-			case "small":
+			case SMALL:
 				this.sip.setWidth(120);
 				this.sip.setHeight(50);
 			break;
-			case "medium":
+			case MEDIUM:
 				this.sip.setWidth(150);
 				this.sip.setHeight(70);
 			break;
-			case "large":
+			case LARGE:
 				this.sip.setWidth(240);
 				this.sip.setHeight(100);
 			break;
@@ -104,15 +97,41 @@ public abstract class SignatureAspect {
 	
 	public void setPosition(SignaturePosition position) {
 		this.signaturePosition = position;
-		// switch aici
-		this.sip.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.CENTER);
-		this.sip.setAlignmentVertical(VisualSignatureAlignmentVertical.MIDDLE);
+		switch (position) {
+			case TOP_LEFT:
+				this.sip.setAlignmentVertical(VisualSignatureAlignmentVertical.TOP);
+				this.sip.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.LEFT);
+			break;
+			case TOP_CENTER:
+				this.sip.setAlignmentVertical(VisualSignatureAlignmentVertical.TOP);
+				this.sip.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.CENTER);
+			break;
+			case TOP_RIGHT:
+				this.sip.setAlignmentVertical(VisualSignatureAlignmentVertical.TOP);
+				this.sip.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.RIGHT);
+			break;
+		}
 	}
 	public SignaturePosition getSignaturePosition() {
 		return this.signaturePosition;
 	}
 	public SignatureSize getSize() {
 		return this.signatureSize;
+	}
+	public boolean isVisibleReason() {
+		if (this.reason != null) {
+			return true;
+		}
+		return false;
+	}
+	public boolean isVisibleLocation() {
+		if (this.location != null) {
+			return true;
+		}
+		return false;
+	}
+	public boolean isVisibleSerialNumber() {
+		return this.isVisibleSerialNumber;
 	}
 	
 	

@@ -41,13 +41,17 @@ import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import model.certificates.Certificate;
 import model.certificates.CertificatesHolder;
+import model.signing.PDFInvisibleSigning;
 import model.signing.PDFSigningOptions;
+import model.signing.PDFVisibleAllPagesRealSigning;
+import model.signing.PDFVisibleAllPagesSigning;
 import model.signing.PDFVisibleSigning;
 import model.signing.SigningMode;
 import model.signing.visible.SignatureAspect;
 import model.signing.visible.SignatureAspectDelegate;
 import model.signing.visible.SignaturePosition;
 import model.signing.visible.SignatureSize;
+import model.signing.visible.SigningPage;
 
 /*
  * PDFSigner este instantiat in momentul in care utilizatorul intra pe semnare PDF. 
@@ -63,10 +67,16 @@ public final class PDFSignerModel {
 	private SignatureAspect signatureAspect; // signature aspect nu se va modifica niciodata in momentul semnarii, sau pe meniul de semnare, ci doar in setari
 	
 	
-	/* in baza membrilor de mai jos voi sti in getMode ce class sa intorc */
-	private boolean isVisibleSignature = false;
+	//===================================================||
+	// CONFIGURATIA POATE FI SALVATA INTR-UN .PROP FILE
+	//===================================================||
+	private boolean isVisibleSignature = true;
 	private boolean isRealSignature = false;
-	private int signingPage = 1;
+	private boolean isVisibleReason = false;
+	private boolean isVisibleLocation = false;
+	private boolean isVisibleSerialNumber = false;
+	private SigningPage signingPage = SigningPage.FIRST_PAGE;
+	private int customSigningPage = 0;
 	
 	// nu cred ca voi avea neaparat options aici... nu prea ar avea rost... trec options doar ca sa ma ajut de el sa construiesc parametrii
 	private PDFSigningOptions signingOptions;
@@ -90,17 +100,35 @@ public final class PDFSignerModel {
 		initFromOptions(options);
 	}
 	
-	/**
-	 * MAIN METHOD
-	 * @param file
-	 * @throws FileNotFoundException
-	 * @throws IOException
-	 */
+	//=============||
+	// MAIN METHOD
+	//=============||
 	public void sign(File file) throws FileNotFoundException, IOException {
-		getSigningMode("pdf.visible.single-page").performSign(file);
+		String mode = "pdf";
+		mode += (this.isVisibleSignature ? ".visible" : ".invisible");
+		mode += (this.signingPage == SigningPage.ALL_PAGES && this.isVisibleSignature ? ".all-pages" : "");
+		mode += (this.signingPage == SigningPage.ALL_PAGES && this.isVisibleSignature && this.isRealSignature ? "-real" : "");
+		
+		getSigningMode(mode).performSign(file);
 	}
+	
 	private SigningMode getSigningMode(String m) {
-		return new PDFVisibleSigning(certificatesHolder, service, padesParameters, signatureAspect);
+		SigningMode sm = null;
+		switch (m) {
+			case "pdf.visible":
+				sm = new PDFVisibleSigning(certificatesHolder, service, padesParameters, signatureAspect);
+			break;
+			case "pdf.visible.all-pages":
+				sm = new PDFVisibleAllPagesSigning(certificatesHolder, service, padesParameters, signatureAspect);
+			break;
+			case "pdf.invisible":
+				sm = new PDFInvisibleSigning(certificatesHolder, service, padesParameters);
+			break;
+			case "pdf.visible.all-pages-real":
+				sm = new PDFVisibleAllPagesRealSigning(certificatesHolder, service, padesParameters, signatureAspect);
+			break;
+		}
+		return sm;
 	}
 	
 	/* SETTERS */
@@ -112,25 +140,25 @@ public final class PDFSignerModel {
 		signatureAspect.setCertificate(cert);
 	}
 	
-	public void setSize(String size) {
+	public void setSignatureSize(SignatureSize size) {
 		signatureAspect.setSize(size);
 	}
 
-	public void setVisibleSignature(boolean b) {
+	public void setVisibleSignature(boolean b) { System.out.println("setting visible signature to " + b);
 		isVisibleSignature = b;
 	}
 	
 	public void setVisibleSN(boolean b) {
-		signatureAspect.setVisibleSerialNumber(b);
+		this.signatureAspect.setVisibleSerialNumber(b);
 	}
 
-	public void setReason(String text, boolean visible) {
+	public void setSigningReason(String text, boolean visible) {
 		padesParameters.setReason(text);
 		String visibleReason = visible ? text : null;
 		signatureAspect.setReason(visibleReason);
 	}
 
-	public void setLocation(String text, boolean visible) {
+	public void setSigningLocation(String text, boolean visible) {
 		padesParameters.setLocation(text);
 		String visibleLocation = visible ? text : null;
 		signatureAspect.setLocation(visibleLocation);
@@ -140,13 +168,48 @@ public final class PDFSignerModel {
 		isRealSignature = b;
 	}
 
-	public void setPage(int i) {
-		signingPage = i;
-		signatureAspect.setPage(i);
+	public void setSigningPage(SigningPage sp) {
+		this.signingPage = sp;
+		switch (sp) {
+			case FIRST_PAGE:
+				this.signatureAspect.setPage(1);
+			break;
+			case LAST_PAGE:
+				this.signatureAspect.setPage(9999);
+			break;
+			case CUSTOM_PAGE:
+				// enable custom input
+			break;
+		}
+	}
+	// for custom page
+	public void setSigningPage(int sp) {
+		this.signatureAspect.setPage(sp);
 	}
 	
 	public void setSignaturePosition(SignaturePosition position) {
 		signatureAspect.setPosition(position);
+	}
+	
+	public boolean isRealSignature() {
+		return this.isRealSignature;
+	}
+	
+	public int isVisibleSignature() {
+		if (this.isVisibleSignature) {
+			return 1;
+		}
+		return 0;
+	}
+	
+	//===============================================||
+	// GETTERS FOR SIGNATURE PRESENTATION
+	//===============================================||
+	public String getSigningReason() {
+		return this.padesParameters.getReason();
+	}
+	public String getSigningLocation() {
+		return this.padesParameters.getLocation();
 	}
 	
 	//===============================================||
@@ -155,11 +218,26 @@ public final class PDFSignerModel {
 	public SignaturePosition getSignaturePosition() {
 		return signatureAspect.getSignaturePosition();
 	}
-	
 	public SignatureSize getSignatureSize() {
 		return signatureAspect.getSize();
 	}
+	public SigningPage getSigningPage() {
+		return this.signingPage;
+	}
+	public boolean isVisibleReason() {
+		return this.isVisibleReason;
+	}
+	public boolean isVisibleLocation() {
+		return this.isVisibleLocation;
+	}
+	public boolean isVisibleSerialNumber() {
+		return this.signatureAspect.isVisibleSerialNumber();
+	}
 
+	//===============================================================||
+	// Model can save that stats in a prop file for preferences
+	// now, we setup model from preferences
+	//===============================================================||
 	public void initFromOptions(PDFSigningOptions options) {
 		Certificate cert = certificatesHolder.getSelectedCertificate();
 		// no certificate
@@ -168,13 +246,9 @@ public final class PDFSignerModel {
 		service.setPdfObjFactory(new PdfBoxNativeObjectFactory());
 		
 		signatureAspect = SignatureAspectDelegate.getAspect("BasicSignatureAspect");
-		
-		System.out.println(signatureAspect);
-		
 		/* configure aspect based on app config data */
-		setPage(1);
-		setReason("asa vreau eu", true);
-		setLocation("la DigiSait", true);
+		setSigningReason("asa vreau eu", true);
+		setSigningLocation("la DigiSait", true);
 		signatureAspect.setVisibleSerialNumber(true);
 		
 		/* configure signature presentation data */

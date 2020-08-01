@@ -25,7 +25,6 @@ import eu.europa.esig.dss.model.pades.SignatureImageParameters;
 import eu.europa.esig.dss.model.pades.SignatureImageTextParameters;
 import eu.europa.esig.dss.pdf.pdfbox.visible.defaultdrawer.ImageTextWriter;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import model.signing.HasPDFSigningOptions;
 import model.signing.visible.CustomSignatureImage.BuildDirection;
 
 // class-ul asta va avea 2 constructori, unul care accepta param File, altul care accepta param String formatat \n new line

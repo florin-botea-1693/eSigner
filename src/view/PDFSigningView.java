@@ -15,6 +15,7 @@ import model.PDFSignerModel;
 import model.certificates.Certificate;
 import model.signing.visible.SignaturePosition;
 import model.signing.visible.SignatureSize;
+import model.signing.visible.SigningPage;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.JComboBox;
@@ -39,35 +40,35 @@ public class PDFSigningView extends JPanel {
 
 	private PDFSignerModel signingModel;
 	
-	private JTextField choosedFilesInput;
-	private JButton chooseFilesButton;
-	private JComboBox certificateSelector;
-	private JButton performSignButton;
-	private JTextField signingReason; 
-	private JTextField signingLocation; 
-	private JLabel signingModeL;
-	private JComboBox visibility;
-	private JCheckBox realSignature;
-	private JComboBox signingPage;
-	private JTextField customPage;
-	private JComboBox size;
-	private JComboBox position;
-	private JLabel lblNewLabel;
-	private JTextArea signingLog;
-	private JCheckBox visibleReason;
-	private JCheckBox visibleLocation;
-	private JLabel customPageL;
-	private JCheckBox visibleSN;
-	private JLabel snLabel;
+	public final JTextField choosedFilesInput;
+	public final JButton chooseFilesButton;
+	public final JComboBox certificateSelector;
+	public final JButton performSignButton;
+	public final JTextField signingReason; 
+	public final JTextField signingLocation;
+	public final JComboBox signatureVisibility;
+	public final JCheckBox isRealSignature;
+	public final JComboBox signingPage;
+	public final JTextField customSigningPage;
+	public final JComboBox signatureSize;
+	public final JComboBox signaturePosition;
+	public final JTextArea signingLog;
+	public final JCheckBox isVisibleReason;
+	public final JCheckBox isVisibleLocation;
+	public final JCheckBox isVisibleSN;
 	
+	private JLabel lblNewLabel;
+	private JLabel customPageL;
+	private JLabel snLabel;
+	/*
 	public JTextField getChoosedFilesInput() {return choosedFilesInput;}
 	public JButton getChooseFilesButton() {return chooseFilesButton;}
 	public JComboBox getCertificateSelector() {return certificateSelector;}
 	public JButton getPerformSignButton() {return performSignButton;}
 	public JTextField getSigningReason() {return signingReason;}
 	public JTextField getSigningLocation() {return signingLocation;}
-	public JComboBox getVisibility() {return visibility;}
-	public JCheckBox getRealSignature() {return realSignature;}
+	//public JComboBox getVisibility() {return visibleSignature;}
+	//public JCheckBox getRealSignature() {return realSignature;}
 	public JComboBox getSigningPage() {return signingPage;}
 	public JTextField getCustomPage() {return customPage;}
 	public JComboBox getSignatureSize() {return size;}
@@ -76,7 +77,7 @@ public class PDFSigningView extends JPanel {
 	public JCheckBox getVisibleReason() {return visibleReason;}
 	public JCheckBox getVisibleLocation() {return visibleLocation;}
 	public JCheckBox getVisibleSN() {return visibleSN;}
-	public JLabel getSnLabel() {return snLabel;}
+	public JLabel getSnLabel() {return snLabel;}*/
 	
 	/**
 	 * Create the panel.
@@ -107,61 +108,60 @@ public class PDFSigningView extends JPanel {
 		snLabel = new JLabel("Serial number");
 		add(snLabel, "cell 0 2 3 1");
 		
-		visibleSN = new JCheckBox("Visible SN");
-		add(visibleSN, "cell 3 2 2 1,alignx right");
+		this.isVisibleSN = new JCheckBox("Visible SN");
+		add(this.isVisibleSN, "cell 3 2 2 1,alignx right");
 		
-		JLabel reasonL = new JLabel("Reason");
-		add(reasonL, "cell 0 3");
-		signingReason = new JTextField();
-		add(signingReason, "cell 0 4 4 1,growx");
-		signingReason.setColumns(10);
-		visibleReason = new JCheckBox("Visible");
-		add(visibleReason, "cell 4 4,alignx right");
+		JLabel label_reason = new JLabel("Reason");
+		add(label_reason, "cell 0 3");
+		this.signingReason = new JTextField();
+		add(this.signingReason, "cell 0 4 4 1,growx");
+		this.signingReason.setColumns(10);
+		this.isVisibleReason = new JCheckBox("Visible");
+		add(this.isVisibleReason, "cell 4 4,alignx right");
 		
-		JLabel locationL = new JLabel("Location");
-		add(locationL, "cell 0 5 6 1");
-		signingLocation = new JTextField();
-		add(signingLocation, "cell 0 6 4 1,growx");
+		JLabel label_location = new JLabel("Location");
+		add(label_location, "cell 0 5 6 1");
+		this.signingLocation = new JTextField();
+		add(this.signingLocation, "cell 0 6 4 1,growx");
 		signingLocation.setColumns(10);
-		visibleLocation = new JCheckBox("Visible");
-		add(visibleLocation, "cell 4 6,alignx right");
+		this.isVisibleLocation = new JCheckBox("Visible");
+		add(this.isVisibleLocation, "cell 4 6,alignx right");
+		JLabel label_signingMode = new JLabel("Signing mode");
+		add(label_signingMode, "cell 0 7");
 		
-		signingModeL = new JLabel("Signing mode");
-		add(signingModeL, "cell 0 7");
+		this.signatureVisibility = new JComboBox(new String[]{"Invisible signature", "Visible signature"});
+		add(this.signatureVisibility, "cell 0 8,growx");
 		
-		visibility = new JComboBox(new String[]{"Visible signature", "Invisible signature"});
-		add(visibility, "cell 0 8,growx");
+		this.signingPage = new JComboBox(SigningPage.values());
+		add(this.signingPage, "cell 1 8,growx");
 		
-		signingPage = new JComboBox(new String[]{"First page", "Last page", "All pages", "Custom page"});
-		add(signingPage, "cell 1 8,growx");
+		this.isRealSignature = new JCheckBox("Real signature");
+		add(this.isRealSignature, "cell 2 8");
 		
-		realSignature = new JCheckBox("Real signature");
-		add(realSignature, "cell 2 8");
+		JLabel label_customPage = new JLabel("page");
+		add(label_customPage, "cell 3 8,alignx trailing");
+		this.customSigningPage = new JTextField();
+		add(this.customSigningPage, "cell 4 8,growx");
+		this.customSigningPage.setColumns(10);
 		
-		customPageL = new JLabel("page");
-		add(customPageL, "cell 3 8,alignx trailing");
-		customPage = new JTextField();
-		add(customPage, "cell 4 8,growx");
-		customPage.setColumns(10);
+		JLabel label_aspectAndPos = new JLabel("Aspect and position");
+		add(label_aspectAndPos, "cell 0 9");
 		
-		lblNewLabel = new JLabel("Aspect and position");
-		add(lblNewLabel, "cell 0 9");
+		this.signatureSize = new JComboBox(SignatureSize.values());
+		add(this.signatureSize, "cell 0 10,growx");
 		
-		size = new JComboBox(SignatureSize.values());
-		add(size, "cell 0 10,growx");
+		this.signaturePosition = new JComboBox(SignaturePosition.values());
+		add(this.signaturePosition, "cell 1 10,growx");
 		
-		position = new JComboBox(SignaturePosition.values());
-		add(position, "cell 1 10,growx");
-		
-		performSignButton = new JButton("Sign");
-		add(performSignButton, "cell 4 10,alignx right");
+		this.performSignButton = new JButton("Sign");
+		add(this.performSignButton, "cell 4 10,alignx right");
 		
 		JScrollPane sf = new JScrollPane();
 		sf.setPreferredSize(new Dimension(200, 100));
 		add(sf, "cell 0 11 5 1,growx");
 		
-		signingLog = new JTextArea();
-		sf.setViewportView(signingLog);
+		this.signingLog = new JTextArea();
+		sf.setViewportView(this.signingLog);
 		//sf.setPreferredSize(new Dimension(this.getWidth(), this.getHeight()));
 	}
 }

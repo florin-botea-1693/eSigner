@@ -9,6 +9,8 @@ import model.PDFSignerModel;
 import model.certificates.Certificate;
 import model.signing.PDFSigningOptions;
 import model.signing.visible.SignaturePosition;
+import model.signing.visible.SignatureSize;
+import model.signing.visible.SigningPage;
 import view.PDFSigningView;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
@@ -34,7 +36,7 @@ public class PDFSigningController {
 	}
 	
 	public void callSigningProcess() {
-		Certificate cert = (Certificate) view.getCertificateSelector().getSelectedItem();
+		Certificate cert = (Certificate) view.certificateSelector.getSelectedItem();
 		for (File file : selectedFiles) {
 			try {
 				// aici voi avea altfel
@@ -50,7 +52,7 @@ public class PDFSigningController {
 	}
 	
 	public void addEventsListeners() {
-		view.getChooseFilesButton().addActionListener(new ActionListener() {
+		view.chooseFilesButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fileChooser = new JFileChooser();
 				fileChooser.setMultiSelectionEnabled(true);
@@ -64,12 +66,12 @@ public class PDFSigningController {
 							val += "|";
 						val += f.toString();
 					}
-					view.getChoosedFilesInput().setText(val);
+					view.choosedFilesInput.setText(val);
 				}
 			}
 		});
 		
-		view.getPerformSignButton().addActionListener(new ActionListener() {
+		view.performSignButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				callSigningProcess();
 			}
@@ -77,128 +79,141 @@ public class PDFSigningController {
 
 		// CHECKBOXEX
 		// visible sn
-		view.getVisibleSN().addItemListener(new ItemListener() {
+		view.isVisibleSN.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				model.setVisibleSN(view.getVisibleSN().isSelected());
+				model.setVisibleSN(view.isVisibleSN.isSelected());
 			}
 		});
 		// visible reason
-		view.getVisibleReason().addItemListener(new ItemListener() {
+		view.isVisibleReason.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				model.setReason(view.getSigningReason().getText(), view.getVisibleReason().isSelected());
+				model.setSigningReason(view.signingReason.getText(), view.isVisibleReason.isSelected());
 			}
 		});
 		// visible location
-		view.getVisibleLocation().addItemListener(new ItemListener() {
+		view.isVisibleLocation.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				model.setLocation(view.getSigningLocation().getText(), view.getVisibleLocation().isSelected());
+				model.setSigningLocation(view.signingLocation.getText(), view.isVisibleLocation.isSelected());
 			}
 		});
 		// real signature
-		view.getRealSignature().addItemListener(new ItemListener() {
+		view.isRealSignature.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				model.setIsRealSignature(view.getRealSignature().isSelected());
+				model.setIsRealSignature(view.isRealSignature.isSelected());
 			}
 		});
 		
 		// FIELDS
 		// reason
-		view.getSigningReason().getDocument().addDocumentListener(new DocumentListener() {
+		view.signingReason.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				model.setReason(view.getSigningReason().getText(), view.getVisibleReason().isSelected());
+				model.setSigningReason(view.signingReason.getText(), view.isVisibleReason.isSelected());
 			}
 			@Override
 			public void removeUpdate(DocumentEvent e) {
-				model.setReason(view.getSigningReason().getText(), view.getVisibleReason().isSelected());
+				model.setSigningReason(view.signingReason.getText(), view.isVisibleReason.isSelected());
 			}
 			@Override
 			public void changedUpdate(DocumentEvent e) {
-				model.setReason(view.getSigningReason().getText(), view.getVisibleReason().isSelected());
+				model.setSigningReason(view.signingReason.getText(), view.isVisibleReason.isSelected());
 			}
 		});
 		// location
-		view.getSigningLocation().getDocument().addDocumentListener(new DocumentListener() {
+		view.signingLocation.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				model.setLocation(view.getSigningLocation().getText(), view.getVisibleLocation().isSelected());
+				model.setSigningLocation(view.signingLocation.getText(), view.isVisibleLocation.isSelected());
 			}
 			@Override
 			public void removeUpdate(DocumentEvent e) {
-				model.setLocation(view.getSigningLocation().getText(), view.getVisibleLocation().isSelected());
+				model.setSigningLocation(view.signingLocation.getText(), view.isVisibleLocation.isSelected());
 			}
 			@Override
 			public void changedUpdate(DocumentEvent e) {
-				model.setLocation(view.getSigningLocation().getText(), view.getVisibleLocation().isSelected());
+				model.setSigningLocation(view.signingLocation.getText(), view.isVisibleLocation.isSelected());
+			}
+		});
+		// signing page customised
+		view.customSigningPage.getDocument().addDocumentListener(new DocumentListener() { // am de furca aici....
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				try {
+				    int intVal = Integer.parseInt(view.customSigningPage.getText());
+				    model.setSigningPage(intVal);
+				}
+				catch (NumberFormatException exception) {}
+			}
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				try {
+				    int intVal = Integer.parseInt(view.customSigningPage.getText());
+				    model.setSigningPage(intVal);
+				}
+				catch (NumberFormatException exception) {}
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				try {
+				    int intVal = Integer.parseInt(view.customSigningPage.getText());
+				    model.setSigningPage(intVal);
+				}
+				catch (NumberFormatException exception) {}
 			}
 		});
 		
 		// SELECTS
 		// visible
-		view.getVisibility().addActionListener (new ActionListener () {
+		view.signatureVisibility.addActionListener (new ActionListener () {
 		    public void actionPerformed(ActionEvent e) {
-		    	switch (view.getVisibility().getSelectedIndex()) {
+		    	switch (view.signatureVisibility.getSelectedIndex()) {
 		    		case 0:
-		    			model.setVisibleSignature(true);
+		    			model.setVisibleSignature(false);
 		    		break;
 		    		case 1:
-		    			model.setVisibleSignature(false);
+		    			model.setVisibleSignature(true);
 		    		break;
 		    	}
 		    }
 		});
 		// page
-		view.getSigningPage().addActionListener (new ActionListener () {
+		view.signingPage.addActionListener (new ActionListener () {
 		    public void actionPerformed(ActionEvent e) {
-		    	switch (view.getSigningPage().getSelectedIndex()) {
-		    		case 0: // first
-		    			model.setPage(1);
-		    		break;
-		    		case 1: // last
-		    			model.setPage(-1);
-		    		break;
-		    		case 2: // all
-		    			model.setPage(0);
-		    		break;	
-		    		case 3: // custom
-		    		// enable custom page field
-		    		break;
-		    	}
+		    	model.setSigningPage((SigningPage) view.signingPage.getSelectedItem());
 		    }
 		});
 		// size
-		view.getSignatureSize().addActionListener (new ActionListener () {
+		view.signatureSize.addActionListener (new ActionListener () {
 		    public void actionPerformed(ActionEvent e) {
-		    	switch (view.getSignatureSize().getSelectedIndex()) {
-		    		case 0: // first
-		    			model.setSize("small");
-		    		break;
-		    		case 1: // last
-		    			model.setSize("medium");
-		    		break;
-		    		case 2: // all
-		    			model.setSize("large");
-		    		break;	
-		    	}
+		    	model.setSignatureSize((SignatureSize) view.signatureSize.getSelectedItem());
 		    }
 		});
 		// position
-		view.getPosition().addActionListener (new ActionListener () {
+		view.signaturePosition.addActionListener (new ActionListener () {
 		    public void actionPerformed(ActionEvent e) {
-		    	model.setSignaturePosition((SignaturePosition) view.getPosition().getSelectedItem());
+		    	model.setSignaturePosition((SignaturePosition) view.signaturePosition.getSelectedItem());
 		    }
 		});
 	}
 
 	//====================================||
-	// DON'T JUDGE ME
+	// DON'T JUDGE ME, poate pe viitor voi avea model care sa anunte direct view ca asa ar fi cel mai ok
 	//====================================||
 	public void syncData() {
-		view.getPosition().setSelectedIndex(model.getSignaturePosition().index);
-		view.getSignatureSize().setSelectedIndex(model.getSignatureSize().index);
+		view.signingReason.setText(model.getSigningReason());
+		view.signingLocation.setText(model.getSigningLocation());
+		view.signatureVisibility.setSelectedIndex(model.isVisibleSignature());
+		view.isRealSignature.setSelected(model.isRealSignature());
+		view.signingPage.setSelectedIndex(model.getSigningPage().index);
+		//view.customSigningPage.setText(model.getSigningPage().getCustom()); nu voi seta niciodata asta ca depinde de ce doc semnez
+		view.signatureSize.setSelectedIndex(model.getSignatureSize().index);
+		view.signaturePosition.setSelectedIndex(model.getSignaturePosition().index);
+		view.isVisibleReason.setSelected(model.isVisibleReason());
+		view.isVisibleLocation.setSelected(model.isVisibleLocation());
+		view.isVisibleSN.setSelected(model.isVisibleSerialNumber());
 	}
 }

@@ -37,6 +37,10 @@ public class BasicSignatureAspect extends SignatureAspect {
 		
 		tp.setPadding(4);
 		_getSIP().setTextParameters(tp);
+		
+		// fa asta neaparat daca nu vrei sa ai o eroare
+		this.setSize(SignatureSize.MEDIUM);
+		this.setPosition(SignaturePosition.TOP_LEFT);
 	}
 	
 	public String getText() {
@@ -44,7 +48,7 @@ public class BasicSignatureAspect extends SignatureAspect {
 		text += ("Digitally signed by " + cert.getHolderNameName()) + "\n";
 		text += isVisibleSerialNumber ? ("SN: " + cert.getSerialNumber() + "\n") : "";
 		text += reason != null ? ("Reason: " + reason + "\n") : "";
-		text += location != null ? ("Reason: " + location + "\n") : "";
+		text += location != null ? ("Location: " + location + "\n") : "";
 		text += "Date: 16.06.1993";
 		return text;
 	}

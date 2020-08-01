@@ -66,24 +66,20 @@ public class PDFVisibleSigning implements SigningMode {// class asta se instanti
 	
 	@Override
 	public void performSign(File file) throws FileNotFoundException, IOException { // aici as putea cel mult sa calculez pozitia semnaturii
+		System.out.println("Signing with visible signature");
 		InputStream resource = new FileInputStream(file);
 		PDDocument pdDocument = PDDocument.load(resource);
-		SignatureTokenConnection token = certificatesHolder.getToken();
-		Certificate cert = certificatesHolder.getSelectedCertificate();
+		SignatureTokenConnection token = this.certificatesHolder.getToken();
+		Certificate cert = this.certificatesHolder.getSelectedCertificate();
 		
-		//if (padesParameters.getImageParameters() == null)
-			//throw new NullPointerException("No certificate has been selected for signing");
-
+		if (pdDocument.getNumberOfPages() < this.signatureAspect.getPage())
+			this.signatureAspect.setPage(pdDocument.getNumberOfPages());
+		System.out.println(this.signatureAspect.getPage());
 		FileDocument toSignDocument = new FileDocument(file);
-		String target = file.getAbsolutePath() + "-semnat.pdf";
-
-		PDPage page = pdDocument.getPage(signatureAspect.getPage() - 1);
-		signatureAspect.setPage(1, page);
-		/* adaugam parametri vizuali semnaturii pades. getSignatureImageParameters() va da refresh la data din semnatura */
 		padesParameters.setImageParameters(signatureAspect.getSIP());
 		ToBeSigned dataToSign = service.getDataToSign(toSignDocument, padesParameters);
 		SignatureValue signatureValue = token.sign(dataToSign, padesParameters.getDigestAlgorithm(), cert.getPrivateKey());
 		DSSDocument signedDocument = service.signDocument(toSignDocument, padesParameters, signatureValue);
-		signedDocument.save(target);
+		signedDocument.save(file.getAbsolutePath() + "-semnat.pdf");
 	}
 }

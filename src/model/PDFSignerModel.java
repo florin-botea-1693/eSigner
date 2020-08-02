@@ -60,8 +60,8 @@ import model.signing.visible.SigningPage;
  * */
 
 public final class PDFSignerModel {
-	private PropertyChangeSupport observable;
-	private boolean stealthMode = false;
+	
+	private PropertyChangeSupport observed;
 	
 	private CertificatesHolder certificatesHolder;
 	private PAdESService service;
@@ -96,7 +96,7 @@ public final class PDFSignerModel {
 	 * @param options - a SQL-lite poate
 	 */
 	public PDFSignerModel(CertificatesHolder certificatesHolder, PDFSigningOptions options) {
-		this.observer = new PropertyChangeSupport(this);
+		this.observed = new PropertyChangeSupportExtended(this);
 		this.certificatesHolder = certificatesHolder;
 		this.certificatesHolder.addPropertyChangeListener(this);
 		this.signatureAspect.addPropertyChangeListener(this);
@@ -130,7 +130,7 @@ public final class PDFSignerModel {
     }
     
     public PDFSignerModel fromView() {
-		this.stealthMode = true;
+		this.observed.skipNextTurn();
 		return this;
 	}
     //====================\\

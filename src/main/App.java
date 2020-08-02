@@ -123,7 +123,8 @@ public class App {
 		//signingOptions.loadFromAppSettings(settings);
 		
 		PDFSignerModel model = new PDFSignerModel(certificatesHolder, signingOptions);
-		PDFSigningView view = new PDFSigningView(model);
+		PDFSigningView view = new PDFSigningView(model);// remove argument, voi avea o metoda call initial in registet ce va pune un model-view in view
+		model.addPropertyChangeListener(view);
 		controller = new PDFSigningController(model, view);
 		// view listen to model
 		// model listen to controller

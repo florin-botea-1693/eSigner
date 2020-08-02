@@ -59,7 +59,8 @@ import model.signing.visible.SigningPage;
  * Class-ele ce vor semna, nu vor avea foarte multa logica de implementat, primesc totul de-a gata, deoarece totul se face centralizat in acest loc
  * */
 
-public final class PDFSignerModel {
+public final class PDFSignerModel implements PropertyChangeListener {
+	private PropertyChangeSupport observable;
 	
 	private CertificatesHolder certificatesHolder;
 	private PAdESService service;
@@ -94,7 +95,11 @@ public final class PDFSignerModel {
 	 * @param options - a SQL-lite poate
 	 */
 	public PDFSignerModel(CertificatesHolder certificatesHolder, PDFSigningOptions options) {
+		this.observer = new PropertyChangeSupport(this);
 		this.certificatesHolder = certificatesHolder;
+		this.certificatesHolder.addPropertyChangeListener(this);
+		this.signatureAspect.addPropertyChangeListener(this);
+		
 		this.signingOptions = options;
 		
 		initFromOptions(options);
@@ -111,6 +116,18 @@ public final class PDFSignerModel {
 		
 		getSigningMode(mode).performSign(file);
 	}
+	
+	//====================||
+	// OBSERVER METHODS
+	//====================||
+	public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        support.addPropertyChangeListener(pcl);
+    }
+ 
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+    	support.removePropertyChangeListener(pcl);
+    }
+    //====================\\
 	
 	private SigningMode getSigningMode(String m) {
 		SigningMode sm = null;
@@ -138,6 +155,7 @@ public final class PDFSignerModel {
 		padesParameters.setCertificateChain(cert.getPrivateKey().getCertificateChain());
 		certificatesHolder.selectCertificate(cert);
 		signatureAspect.setCertificate(cert);
+		this.observable.firePropertyChange("news", this.news, value);
 	}
 	
 	public void setSignatureSize(SignatureSize size) {

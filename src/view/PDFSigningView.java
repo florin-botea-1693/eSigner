@@ -36,7 +36,7 @@ import javax.swing.JTextArea;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 
-public class PDFSigningView extends JPanel {
+public class PDFSigningView extends JPanel implements PropertyChangeListener {
 
 	private PDFSignerModel signingModel;
 	

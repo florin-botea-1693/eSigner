@@ -59,8 +59,9 @@ import model.signing.visible.SigningPage;
  * Class-ele ce vor semna, nu vor avea foarte multa logica de implementat, primesc totul de-a gata, deoarece totul se face centralizat in acest loc
  * */
 
-public final class PDFSignerModel implements PropertyChangeListener {
+public final class PDFSignerModel {
 	private PropertyChangeSupport observable;
+	private boolean stealthMode = false;
 	
 	private CertificatesHolder certificatesHolder;
 	private PAdESService service;
@@ -127,6 +128,11 @@ public final class PDFSignerModel implements PropertyChangeListener {
     public void removePropertyChangeListener(PropertyChangeListener pcl) {
     	support.removePropertyChangeListener(pcl);
     }
+    
+    public PDFSignerModel fromView() {
+		this.stealthMode = true;
+		return this;
+	}
     //====================\\
 	
 	private SigningMode getSigningMode(String m) {
@@ -155,7 +161,8 @@ public final class PDFSignerModel implements PropertyChangeListener {
 		padesParameters.setCertificateChain(cert.getPrivateKey().getCertificateChain());
 		certificatesHolder.selectCertificate(cert);
 		signatureAspect.setCertificate(cert);
-		this.observable.firePropertyChange("news", this.news, value);
+		if (!this.stealthMode) this.observable.firePropertyChange("news", this.news, value);
+		this.stealthMode = false;
 	}
 	
 	public void setSignatureSize(SignatureSize size) {

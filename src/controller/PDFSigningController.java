@@ -82,21 +82,21 @@ public class PDFSigningController {
 		view.isVisibleSN.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				model.setVisibleSN(view.isVisibleSN.isSelected());
+				model.stealth().setVisibleSN(view.isVisibleSN.isSelected());
 			}
 		});
 		// visible reason
 		view.isVisibleReason.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				model.setSigningReason(view.signingReason.getText(), view.isVisibleReason.isSelected());
+				model.stealth().setSigningReason(view.signingReason.getText(), view.isVisibleReason.isSelected());
 			}
 		});
 		// visible location
 		view.isVisibleLocation.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				model.setSigningLocation(view.signingLocation.getText(), view.isVisibleLocation.isSelected());
+				model.stealth().setSigningLocation(view.signingLocation.getText(), view.isVisibleLocation.isSelected());
 			}
 		});
 		// real signature

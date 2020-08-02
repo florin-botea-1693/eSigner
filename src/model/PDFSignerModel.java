@@ -66,45 +66,29 @@ public final class PDFSignerModel {
 	private CertificatesHolder certificatesHolder;
 	private PAdESService service;
 	private PAdESSignatureParameters padesParameters = new PAdESSignatureParameters();
-	private SignatureAspect signatureAspect; // signature aspect nu se va modifica niciodata in momentul semnarii, sau pe meniul de semnare, ci doar in setari
-	
+	private SignatureAspect signatureAspect;
 	
 	//===================================================||
-	// CONFIGURATIA POATE FI SALVATA INTR-UN .PROP FILE
+	// USED FOR DECIDE WHICH SIGNER TO INSTANTIATE
 	//===================================================||
 	private boolean isVisibleSignature = true;
 	private boolean isRealSignature = false;
-	private boolean isVisibleReason = false;
-	private boolean isVisibleLocation = false;
-	private boolean isVisibleSerialNumber = false;
 	private SigningPage signingPage = SigningPage.FIRST_PAGE;
-	private int customSigningPage = 0;
+	//========================\\
 	
-	// nu cred ca voi avea neaparat options aici... nu prea ar avea rost... trec options doar ca sa ma ajut de el sa construiesc parametrii
-	private PDFSigningOptions signingOptions;
-
 	public CertificatesHolder getCertificatesHolder() {return certificatesHolder;}
 	public PAdESSignatureParameters getPadesParameters() {return padesParameters;}
-	public PDFSigningOptions getSigningOptions() {return signingOptions;}
 	public PAdESService getPadesService() {return service;}
 	public List<Certificate> getCertificates() {return certificatesHolder.getCertificates();}
 	
-	
-	/**
-	 * CONSTRUCTOR - creates pdf signing model, a wrapper around multiple similar signing modes that needs same parameters
-	 * @param certificatesHolder
-	 * @param options - a SQL-lite poate
-	 */
-	public PDFSignerModel(CertificatesHolder certificatesHolder, PDFSigningOptions options) {
+	//====================||
+	// >>> CONSTRUCTOR <<<
+	//====================||
+	public PDFSignerModel(CertificatesHolder certificatesHolder) {
 		this.observed = new PropertyChangeSupportExtended(this);
 		this.certificatesHolder = certificatesHolder;
-		this.certificatesHolder.addPropertyChangeListener(this);
-		this.signatureAspect.addPropertyChangeListener(this);
-		
-		this.signingOptions = options;
-		
-		initFromOptions(options);
 	}
+	//===================\\
 	
 	//=============||
 	// MAIN METHOD
@@ -122,14 +106,15 @@ public final class PDFSignerModel {
 	// OBSERVER METHODS
 	//====================||
 	public void addPropertyChangeListener(PropertyChangeListener pcl) {
-        support.addPropertyChangeListener(pcl);
+        observed.addPropertyChangeListener(pcl);
+        pcl.propertyChange(new PropertyChangeEvent(this, "*",  null, newVal));
     }
  
     public void removePropertyChangeListener(PropertyChangeListener pcl) {
     	support.removePropertyChangeListener(pcl);
     }
     
-    public PDFSignerModel stealth() {
+    public PDFSignerModel stealthThisTime() {
 		this.observed.skipNextTurn();
 		return this;
 	}
@@ -154,15 +139,15 @@ public final class PDFSignerModel {
 		return sm;
 	}
 	
-	/* SETTERS */
-	
+	//====================||
+	// OBSERVABLE SETTERS
+	//====================||
 	public void setSigningCertificate(Certificate cert) {
 		padesParameters.setSigningCertificate(cert.getPrivateKey().getCertificate());
 		padesParameters.setCertificateChain(cert.getPrivateKey().getCertificateChain());
 		certificatesHolder.selectCertificate(cert);
 		signatureAspect.setCertificate(cert);
-		if (!this.stealthMode) this.observable.firePropertyChange("news", this.news, value);
-		this.stealthMode = false;
+		this.observable.firePropertyChange("news", this.news, value);
 	}
 	
 	public void setSignatureSize(SignatureSize size) {
@@ -226,6 +211,7 @@ public final class PDFSignerModel {
 		}
 		return 0;
 	}
+	//====================\\
 	
 	//===============================================||
 	// GETTERS FOR SIGNATURE PRESENTATION
@@ -263,7 +249,14 @@ public final class PDFSignerModel {
 	// Model can save that stats in a prop file for preferences
 	// now, we setup model from preferences
 	//===============================================================||
-	public void initFromOptions(PDFSigningOptions options) {
+	public void loadFromOptions(PDFSigningOptions options) {
+		// options get prefered certificate
+		// set prefered certificate with view listening
+	}
+
+	public void loadFromOptions(PDFSigningOptions options, Certificate cert) {
+		// options get based on prefered certificate
+		// set with view listening
 		Certificate cert = certificatesHolder.getSelectedCertificate();
 		// no certificate
 		CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();

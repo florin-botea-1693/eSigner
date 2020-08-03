@@ -32,7 +32,6 @@ public class PDFSigningController {
 		this.view = view;
 		
 		addEventsListeners();
-		syncData();
 	}
 	
 	public void callSigningProcess() {
@@ -82,21 +81,21 @@ public class PDFSigningController {
 		view.isVisibleSN.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				model.stealth().setVisibleSN(view.isVisibleSN.isSelected());
+				model.silenced().setVisibleSN(view.isVisibleSN.isSelected());
 			}
 		});
 		// visible reason
 		view.isVisibleReason.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				model.stealth().setSigningReason(view.signingReason.getText(), view.isVisibleReason.isSelected());
+				model.silenced().setSigningReason(view.signingReason.getText(), view.isVisibleReason.isSelected());
 			}
 		});
 		// visible location
 		view.isVisibleLocation.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				model.stealth().setSigningLocation(view.signingLocation.getText(), view.isVisibleLocation.isSelected());
+				model.silenced().setSigningLocation(view.signingLocation.getText(), view.isVisibleLocation.isSelected());
 			}
 		});
 		// real signature
@@ -198,22 +197,5 @@ public class PDFSigningController {
 		    	model.setSignaturePosition((SignaturePosition) view.signaturePosition.getSelectedItem());
 		    }
 		});
-	}
-
-	//====================================||
-	// DON'T JUDGE ME, poate pe viitor voi avea model care sa anunte direct view ca asa ar fi cel mai ok
-	//====================================||
-	public void syncData() {
-		view.signingReason.setText(model.getSigningReason());
-		view.signingLocation.setText(model.getSigningLocation());
-		view.signatureVisibility.setSelectedIndex(model.isVisibleSignature());
-		view.isRealSignature.setSelected(model.isRealSignature());
-		view.signingPage.setSelectedIndex(model.getSigningPage().index);
-		//view.customSigningPage.setText(model.getSigningPage().getCustom()); nu voi seta niciodata asta ca depinde de ce doc semnez
-		view.signatureSize.setSelectedIndex(model.getSignatureSize().index);
-		view.signaturePosition.setSelectedIndex(model.getSignaturePosition().index);
-		view.isVisibleReason.setSelected(model.isVisibleReason());
-		view.isVisibleLocation.setSelected(model.isVisibleLocation());
-		view.isVisibleSN.setSelected(model.isVisibleSerialNumber());
 	}
 }

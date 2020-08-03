@@ -22,6 +22,8 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -60,29 +62,11 @@ public class PDFSigningView extends JPanel implements PropertyChangeListener {
 	private JLabel lblNewLabel;
 	private JLabel customPageL;
 	private JLabel snLabel;
-	/*
-	public JTextField getChoosedFilesInput() {return choosedFilesInput;}
-	public JButton getChooseFilesButton() {return chooseFilesButton;}
-	public JComboBox getCertificateSelector() {return certificateSelector;}
-	public JButton getPerformSignButton() {return performSignButton;}
-	public JTextField getSigningReason() {return signingReason;}
-	public JTextField getSigningLocation() {return signingLocation;}
-	//public JComboBox getVisibility() {return visibleSignature;}
-	//public JCheckBox getRealSignature() {return realSignature;}
-	public JComboBox getSigningPage() {return signingPage;}
-	public JTextField getCustomPage() {return customPage;}
-	public JComboBox getSignatureSize() {return size;}
-	public JComboBox getPosition() {return position;}
-	public JTextArea getSigningLog() {return signingLog;}
-	public JCheckBox getVisibleReason() {return visibleReason;}
-	public JCheckBox getVisibleLocation() {return visibleLocation;}
-	public JCheckBox getVisibleSN() {return visibleSN;}
-	public JLabel getSnLabel() {return snLabel;}*/
-	
-	/**
-	 * Create the panel.
-	 */
-	public PDFSigningView(PDFSignerModel signingModel) {
+
+	//=======================||
+	// >>> CREATE VISUAL <<<
+	//=======================||
+	public PDFSigningView() {
 		
 		this.signingModel = signingModel;
 		
@@ -163,5 +147,10 @@ public class PDFSigningView extends JPanel implements PropertyChangeListener {
 		this.signingLog = new JTextArea();
 		sf.setViewportView(this.signingLog);
 		//sf.setPreferredSize(new Dimension(this.getWidth(), this.getHeight()));
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		System.out.println("a");
 	}
 }

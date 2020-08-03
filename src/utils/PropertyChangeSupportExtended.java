@@ -1,5 +1,7 @@
 package utils;
 
+import java.beans.PropertyChangeSupport;
+
 public class PropertyChangeSupportExtended extends PropertyChangeSupport {
 	
 	private boolean skipNextTurn = false;

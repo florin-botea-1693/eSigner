@@ -22,6 +22,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import controller.PDFSigningController;
+import model.AppSettings;
 import model.PDFSignerModel;
 import model.certificates.MSCAPICertificatesHolder;
 import model.signing.PDFSigningOptions;
@@ -116,22 +117,14 @@ public class App {
 		frame.repaint();
 	}
 	*/
-	public void goToPDFSign() {
+	public void goToPDFSign() throws IOException {
 		MSCAPICertificatesHolder certificatesHolder = new MSCAPICertificatesHolder();
-		//AppSettings settings = AppSettings.getInstance();
-		PDFSigningOptions signingOptions = new PDFSigningOptions();
-		//signingOptions.loadFromAppSettings(settings);
-		
-		PDFSignerModel model = new PDFSignerModel(certificatesHolder, signingOptions);
-		PDFSigningView view = new PDFSigningView(model);// remove argument, voi avea o metoda call initial in registet ce va pune un model-view in view
+		AppSettings settings = AppSettings.getInstance();
+	
+		PDFSignerModel model = new PDFSignerModel(certificatesHolder, settings);
+		PDFSigningView view = new PDFSigningView();// remove argument, voi avea o metoda call initial in registet ce va pune un model-view in view
 		model.addPropertyChangeListener(view);
 		controller = new PDFSigningController(model, view);
-		// view listen to model
-		// model listen to controller
-		// controller listen to view
-		//model.addListener(view); // PDFSigningView
-		//controller.addListener(model); // --- controller va avea model in el, deci NU!
-		//view.addListener(controller);
 
 		frame.setContentPane(view);
 		frame.repaint();

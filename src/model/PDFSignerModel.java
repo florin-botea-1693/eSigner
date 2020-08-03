@@ -2,6 +2,8 @@ package model;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -52,6 +54,7 @@ import model.signing.visible.SignatureAspectDelegate;
 import model.signing.visible.SignaturePosition;
 import model.signing.visible.SignatureSize;
 import model.signing.visible.SigningPage;
+import utils.PropertyChangeSupportExtended;
 
 /*
  * PDFSigner este instantiat in momentul in care utilizatorul intra pe semnare PDF. 
@@ -61,9 +64,10 @@ import model.signing.visible.SigningPage;
 
 public final class PDFSignerModel {
 	
-	private PropertyChangeSupport observed;
+	private PropertyChangeSupportExtended observed;
 	
 	private CertificatesHolder certificatesHolder;
+	private AppSettings settings;
 	private PAdESService service;
 	private PAdESSignatureParameters padesParameters = new PAdESSignatureParameters();
 	private SignatureAspect signatureAspect;
@@ -84,8 +88,9 @@ public final class PDFSignerModel {
 	//====================||
 	// >>> CONSTRUCTOR <<<
 	//====================||
-	public PDFSignerModel(CertificatesHolder certificatesHolder) {
+	public PDFSignerModel(CertificatesHolder certificatesHolder, AppSettings settings) {
 		this.observed = new PropertyChangeSupportExtended(this);
+		this.settings = settings;
 		this.certificatesHolder = certificatesHolder;
 	}
 	//===================\\
@@ -107,11 +112,11 @@ public final class PDFSignerModel {
 	//====================||
 	public void addPropertyChangeListener(PropertyChangeListener pcl) {
         observed.addPropertyChangeListener(pcl);
-        pcl.propertyChange(new PropertyChangeEvent(this, "*",  null, newVal));
+        pcl.propertyChange(new PropertyChangeEvent(this, "*",  null, this.toModelView()));
     }
  
     public void removePropertyChangeListener(PropertyChangeListener pcl) {
-    	support.removePropertyChangeListener(pcl);
+    	observed.removePropertyChangeListener(pcl);
     }
     
     public PDFSignerModel silenced() {
@@ -147,7 +152,7 @@ public final class PDFSignerModel {
 		padesParameters.setCertificateChain(cert.getPrivateKey().getCertificateChain());
 		certificatesHolder.selectCertificate(cert);
 		signatureAspect.setCertificate(cert);
-		this.observable.firePropertyChange("news", this.news, value);
+		this.observed.firePropertyChange("certificate", null, null);
 	}
 	
 	public void setSignatureSize(SignatureSize size) {
@@ -232,17 +237,17 @@ public final class PDFSignerModel {
 	public SignatureSize getSignatureSize() {
 		return signatureAspect.getSize();
 	}
+	
 	public SigningPage getSigningPage() {
 		return this.signingPage;
 	}
-	public boolean isVisibleReason() {
-		return this.isVisibleReason;
-	}
-	public boolean isVisibleLocation() {
-		return this.isVisibleLocation;
-	}
+	
 	public boolean isVisibleSerialNumber() {
 		return this.signatureAspect.isVisibleSerialNumber();
+	}
+	
+	public Object toModelView() {
+		return null;
 	}
 
 	//===============================================================||
@@ -254,7 +259,7 @@ public final class PDFSignerModel {
 		// set prefered certificate with view listening
 	}
 
-	public void loadFromOptions(PDFSigningOptions options, Certificate cert) {
+	public void loadFromOptions(PDFSigningOptions options, int certSN) {
 		// options get based on prefered certificate
 		// set with view listening
 		Certificate cert = certificatesHolder.getSelectedCertificate();

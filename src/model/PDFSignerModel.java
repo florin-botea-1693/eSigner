@@ -114,7 +114,7 @@ public final class PDFSignerModel {
     	support.removePropertyChangeListener(pcl);
     }
     
-    public PDFSignerModel stealthThisTime() {
+    public PDFSignerModel silenced() {
 		this.observed.skipNextTurn();
 		return this;
 	}

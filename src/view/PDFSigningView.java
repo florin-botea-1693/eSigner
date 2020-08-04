@@ -3,7 +3,8 @@ package view;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -16,6 +17,7 @@ import model.certificates.Certificate;
 import model.signing.visible.SignaturePosition;
 import model.signing.visible.SignatureSize;
 import model.signing.visible.SigningPage;
+import modelView.PDFSigningModelView;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.JComboBox;
@@ -68,7 +70,7 @@ public class PDFSigningView extends JPanel implements PropertyChangeListener {
 	//=======================||
 	public PDFSigningView() {
 		
-		this.signingModel = signingModel;
+		//this.signingModel = signingModel;
 		
 		//setPreferredSize(new Dimension(600, 600));
 		
@@ -84,7 +86,7 @@ public class PDFSigningView extends JPanel implements PropertyChangeListener {
 		chooseFilesButton = new JButton("PDF(s) to sign");
 		add(chooseFilesButton, "cell 3 0 2 1,alignx right");
 		
-		certificateSelector = new JComboBox(signingModel.getCertificates().toArray());
+		certificateSelector = new JComboBox();//signingModel.getCertificates().toArray()
 		add(certificateSelector, "cell 0 1 5 1,growx");
 		
 		//add(new JSeparator(SwingConstants.HORIZONTAL), "cell 7 1");
@@ -151,6 +153,12 @@ public class PDFSigningView extends JPanel implements PropertyChangeListener {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		System.out.println("a");
+		PDFSigningModelView mv = (PDFSigningModelView) evt.getNewValue();
+		switch (evt.getPropertyName()) {
+		case "*":
+			ComboBoxModel cbm = new DefaultComboBoxModel(mv.certificates);
+			this.certificateSelector.setModel(cbm);
+		break;
+		}
 	}
 }

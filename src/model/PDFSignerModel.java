@@ -54,6 +54,7 @@ import model.signing.visible.SignatureAspectDelegate;
 import model.signing.visible.SignaturePosition;
 import model.signing.visible.SignatureSize;
 import model.signing.visible.SigningPage;
+import modelView.PDFSigningModelView;
 import utils.PropertyChangeSupportExtended;
 
 /*
@@ -84,6 +85,17 @@ public final class PDFSignerModel {
 	public PAdESSignatureParameters getPadesParameters() {return padesParameters;}
 	public PAdESService getPadesService() {return service;}
 	public List<Certificate> getCertificates() {return certificatesHolder.getCertificates();}
+	public SignaturePosition getSignaturePosition() {return signatureAspect.getSignaturePosition();}
+	public SignatureSize getSignatureSize() {return signatureAspect.getSize();}
+	public SigningPage getSigningPage() {return this.signingPage;}
+	public String getSigningReason() {return this.padesParameters.getReason();}
+	public String getSigningLocation() {return this.padesParameters.getLocation();}
+	public boolean isVisibleSerialNumber() {return this.signatureAspect.isVisibleSerialNumber();}
+	public boolean isVisibleReason() {return this.signatureAspect.isVisibleReason();}
+	public boolean isVisibleLocation() {return this.signatureAspect.isVisibleLocation();}
+	public boolean isRealSignature() {return this.isRealSignature;}
+	public boolean isVisibleSignature() {return this.isVisibleSignature;}
+	public int getCustomSigningPage() {return this.signatureAspect.getPage();}
 	
 	//====================||
 	// >>> CONSTRUCTOR <<<
@@ -92,6 +104,13 @@ public final class PDFSignerModel {
 		this.observed = new PropertyChangeSupportExtended(this);
 		this.settings = settings;
 		this.certificatesHolder = certificatesHolder;
+		
+		CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
+		this.service = new PAdESService(commonCertificateVerifier);
+		this.service.setPdfObjFactory(new PdfBoxNativeObjectFactory());
+		this.padesParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
+		
+		this.loadFromSettings();
 	}
 	//===================\\
 	
@@ -205,82 +224,45 @@ public final class PDFSignerModel {
 	public void setSignaturePosition(SignaturePosition position) {
 		signatureAspect.setPosition(position);
 	}
-	
-	public boolean isRealSignature() {
-		return this.isRealSignature;
-	}
-	
-	public int isVisibleSignature() {
-		if (this.isVisibleSignature) {
-			return 1;
-		}
-		return 0;
-	}
-	//====================\\
-	
-	//===============================================||
-	// GETTERS FOR SIGNATURE PRESENTATION
-	//===============================================||
-	public String getSigningReason() {
-		return this.padesParameters.getReason();
-	}
-	public String getSigningLocation() {
-		return this.padesParameters.getLocation();
-	}
-	
-	//===============================================||
-	// GETTERS FOR SIGNATURE ASPECT AND POSITION
-	//===============================================||
-	public SignaturePosition getSignaturePosition() {
-		return signatureAspect.getSignaturePosition();
-	}
-	public SignatureSize getSignatureSize() {
-		return signatureAspect.getSize();
-	}
-	
-	public SigningPage getSigningPage() {
-		return this.signingPage;
-	}
-	
-	public boolean isVisibleSerialNumber() {
-		return this.signatureAspect.isVisibleSerialNumber();
-	}
-	
-	public Object toModelView() {
-		return null;
+	//==================================\\
+
+	public PDFSigningModelView toModelView() {
+		return new PDFSigningModelView(this);
 	}
 
 	//===============================================================||
 	// Model can save that stats in a prop file for preferences
 	// now, we setup model from preferences
 	//===============================================================||
-	public void loadFromOptions(PDFSigningOptions options) {
-		// options get prefered certificate
-		// set prefered certificate with view listening
+	private void loadFromSettings() {
+		String certSN = this.settings.getPreferredCertificate();
+		this.loadFromSettings(certSN);
 	}
 
-	public void loadFromOptions(PDFSigningOptions options, int certSN) {
+	private void loadFromSettings(String certSN) {
+		this.settings.setCertificate(certSN);
+		// aici ar trebui sa setez si in certificateholder certificatul implicit
+
 		// options get based on prefered certificate
 		// set with view listening
-		Certificate cert = certificatesHolder.getSelectedCertificate();
+		Certificate cert = null; //certificatesHolder.getSelectedCertificate();
 		// no certificate
-		CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
-		service = new PAdESService(commonCertificateVerifier);
-		service.setPdfObjFactory(new PdfBoxNativeObjectFactory());
-		
 		signatureAspect = SignatureAspectDelegate.getAspect("BasicSignatureAspect");
+		
 		/* configure aspect based on app config data */
-		setSigningReason("asa vreau eu", true);
-		setSigningLocation("la DigiSait", true);
-		signatureAspect.setVisibleSerialNumber(true);
+		
+		this.setSigningReason(this.settings.getSigningReason(), this.settings.isVisibleReason());
+		this.setSigningLocation(this.settings.getSigningLocation(), this.settings.isVisibleLocation());
+		this.setVisibleSN(this.settings.isVisibleSerialNumber());
+		
 		
 		/* configure signature presentation data */
-		padesParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
+		
 		if (cert == null) return;
-		padesParameters.setSigningCertificate(cert.getPrivateKey().getCertificate());
-		padesParameters.setCertificateChain(cert.getPrivateKey().getCertificateChain());
-		certificatesHolder.selectCertificate(cert);
+		this.padesParameters.setSigningCertificate(cert.getPrivateKey().getCertificate());
+		this.padesParameters.setCertificateChain(cert.getPrivateKey().getCertificateChain());
+		//certificatesHolder.selectCertificate(cert);
 		/* !!cel mai important!! nu pot construi grafica semnatura fara un certificat */
-		signatureAspect.setCertificate(cert);
+		//signatureAspect.setCertificate(cert);
 	}
 }

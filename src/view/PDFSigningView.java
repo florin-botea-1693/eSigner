@@ -150,14 +150,50 @@ public class PDFSigningView extends JPanel implements PropertyChangeListener {
 		sf.setViewportView(this.signingLog);
 		//sf.setPreferredSize(new Dimension(this.getWidth(), this.getHeight()));
 	}
+	
+	private void setCertificates(Object[] o) {
+		ComboBoxModel cbm = new DefaultComboBoxModel(o);
+		this.certificateSelector.setModel(cbm);
+	}
+	
+	private void isVisibleSerialNumber(boolean b) {
+
+	}
+	
+	private void isVisibleReason(boolean b) {}
+	
+	private void isVisibleLocation(boolean b) {}
+	
+	private void isVisibleSignature(boolean b) {}
+	
+	private void isRealSignature(boolean b) {}
+	
+	private void setSigningCertificate(Certificate cert) {}
+	
+	private void setSigningLocation(String s) {}
+	
+	private void setSigningReason(String s) {}
+	
+	private void setSigningPage(SigningPage p) {}
+	
+	private void setCustomSigningPage(int p) {}
+	
+	private void setSignatureSize(SignatureSize s) {}
+	
+	private void setSignaturePosition(SignaturePosition p) {}
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		PDFSigningModelView mv = (PDFSigningModelView) evt.getNewValue();
 		switch (evt.getPropertyName()) {
 		case "*":
-			ComboBoxModel cbm = new DefaultComboBoxModel(mv.certificates);
-			this.certificateSelector.setModel(cbm);
+			this.setCertificates();
+			this.selectCertificate();
+			this.isVisibleSerialNumber();
+			this.isVisibleReason();
+			this.isVisibleLocation();
+			this.isVisibleSignature();
+			this.isRealSignature();
 		break;
 		}
 	}

@@ -85,6 +85,7 @@ public final class PDFSignerModel {
 	public PAdESSignatureParameters getPadesParameters() {return padesParameters;}
 	public PAdESService getPadesService() {return service;}
 	public List<Certificate> getCertificates() {return certificatesHolder.getCertificates();}
+	public Certificate getSelectedCertificate() {return certificatesHolder.getSelectedCertificate();}
 	public SignaturePosition getSignaturePosition() {return signatureAspect.getSignaturePosition();}
 	public SignatureSize getSignatureSize() {return signatureAspect.getSize();}
 	public SigningPage getSigningPage() {return this.signingPage;}
@@ -212,9 +213,10 @@ public final class PDFSignerModel {
 				this.signatureAspect.setPage(9999);
 			break;
 			case CUSTOM_PAGE:
-				// enable custom input
+				//
 			break;
 		}
+		observed.firePropertyChange("signingPage", null, sp);
 	}
 	// for custom page
 	public void setSigningPage(int sp) {

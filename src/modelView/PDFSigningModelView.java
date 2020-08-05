@@ -9,6 +9,7 @@ import model.signing.visible.SigningPage;
 public class PDFSigningModelView {
 	
 	public final Object[] certificates;
+	public final Certificate selectedCertificate;
 	public final boolean isVisibleSerialNumber;
 	public final String signingReason;
 	public final boolean isVisibleReason;
@@ -23,6 +24,7 @@ public class PDFSigningModelView {
 	
 	public PDFSigningModelView(PDFSignerModel model) {
 		this.certificates = model.getCertificates().toArray();
+		this.selectedCertificate = model.getSelectedCertificate();
 		this.isVisibleSerialNumber = model.isVisibleSerialNumber();
 		this.signingReason = model.getSigningReason();
 		this.isVisibleReason = model.isVisibleReason();

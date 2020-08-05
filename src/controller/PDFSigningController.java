@@ -182,6 +182,9 @@ public class PDFSigningController {
 		// page
 		view.signingPage.addActionListener (new ActionListener () {
 		    public void actionPerformed(ActionEvent e) {
+		    	view.customSigningPage.setEnabled(false);
+		    	if (view.signingPage.getSelectedItem() == SigningPage.CUSTOM_PAGE)
+		    		view.customSigningPage.setEnabled(true);
 		    	model.setSigningPage((SigningPage) view.signingPage.getSelectedItem());
 		    }
 		});

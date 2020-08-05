@@ -27,6 +27,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,7 +64,7 @@ public class PDFSigningView extends JPanel implements PropertyChangeListener {
 	
 	private JLabel lblNewLabel;
 	private JLabel customPageL;
-	private JLabel snLabel;
+	private JLabel label_serialNumber;
 
 	//=======================||
 	// >>> CREATE VISUAL <<<
@@ -91,8 +92,8 @@ public class PDFSigningView extends JPanel implements PropertyChangeListener {
 		
 		//add(new JSeparator(SwingConstants.HORIZONTAL), "cell 7 1");
 		
-		snLabel = new JLabel("Serial number");
-		add(snLabel, "cell 0 2 3 1");
+		label_serialNumber = new JLabel("Serial number");
+		add(label_serialNumber, "cell 0 2 3 1");
 		
 		this.isVisibleSN = new JCheckBox("Visible SN");
 		add(this.isVisibleSN, "cell 3 2 2 1,alignx right");
@@ -156,44 +157,89 @@ public class PDFSigningView extends JPanel implements PropertyChangeListener {
 		this.certificateSelector.setModel(cbm);
 	}
 	
-	private void isVisibleSerialNumber(boolean b) {
-
+	private void selectCertificate(Certificate cert) {
+		if (cert == null) return;
+		for (int i=0; i<this.certificateSelector.getModel().getSize(); i++) {
+			Certificate localCert = (Certificate) this.certificateSelector.getModel().getElementAt(i);
+			BigInteger localCertSN = localCert.getPrivateKey().getCertificate().getCertificate().getSerialNumber();
+			BigInteger certSN = cert.getPrivateKey().getCertificate().getCertificate().getSerialNumber();
+			if (localCertSN.compareTo(certSN) == 0) {
+				this.certificateSelector.setSelectedIndex(i);
+				this.label_serialNumber.setText("SN: " + cert.getSerialNumber());
+				return;
+			}
+		}
+		System.out.println("certificatul selectat in Model nu a fost gasit");
 	}
 	
-	private void isVisibleReason(boolean b) {}
+	private void isVisibleSerialNumber(boolean b) {
+		this.isVisibleSN.setSelected(b);
+	}
 	
-	private void isVisibleLocation(boolean b) {}
+	private void isVisibleReason(boolean b) {
+		this.isVisibleReason.setSelected(b);
+	}
 	
-	private void isVisibleSignature(boolean b) {}
+	private void isVisibleLocation(boolean b) {
+		this.isVisibleLocation.setSelected(b);
+	}
 	
-	private void isRealSignature(boolean b) {}
+	private void isVisibleSignature(boolean b) {
+		int i = b ? 1 : 0;
+		this.signatureVisibility.setSelectedIndex(i);
+	}
 	
-	private void setSigningCertificate(Certificate cert) {}
+	private void isRealSignature(boolean b) {
+		this.isRealSignature.setSelected(b);
+	}
 	
-	private void setSigningLocation(String s) {}
+	private void setSigningLocation(String s) {
+		this.signingLocation.setText(s);
+	}
 	
-	private void setSigningReason(String s) {}
+	private void setSigningReason(String s) {
+		this.signingReason.setText(s);
+	}
 	
-	private void setSigningPage(SigningPage p) {}
+	private void setSigningPage(SigningPage p) {
+		this.customSigningPage.setEnabled(true);
+		if (p != SigningPage.CUSTOM_PAGE) {
+			this.customSigningPage.setEnabled(false);
+		}
+		this.signingPage.setSelectedItem(p);
+	}
 	
-	private void setCustomSigningPage(int p) {}
+	private void setCustomSigningPage(int p) {
+		this.customSigningPage.setText(String.valueOf(p));
+	}
 	
-	private void setSignatureSize(SignatureSize s) {}
+	private void setSignatureSize(SignatureSize s) {
+		this.signatureSize.setSelectedItem(s);
+	}
 	
-	private void setSignaturePosition(SignaturePosition p) {}
+	private void setSignaturePosition(SignaturePosition p) {
+		this.signaturePosition.setSelectedItem(p);
+	}
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		PDFSigningModelView mv = (PDFSigningModelView) evt.getNewValue();
+		System.out.println(evt.getPropertyName());
 		switch (evt.getPropertyName()) {
 		case "*":
-			this.setCertificates();
-			this.selectCertificate();
-			this.isVisibleSerialNumber();
-			this.isVisibleReason();
-			this.isVisibleLocation();
-			this.isVisibleSignature();
-			this.isRealSignature();
+			PDFSigningModelView mv = (PDFSigningModelView) evt.getNewValue();
+			this.setCertificates(mv.certificates);
+			this.selectCertificate(mv.selectedCertificate);
+			this.isVisibleSerialNumber(mv.isVisibleSerialNumber);
+			this.isVisibleReason(mv.isVisibleReason);
+			this.isVisibleLocation(mv.isVisibleLocation);
+			this.isVisibleSignature(mv.isVisibleSignature);
+			this.isRealSignature(mv.isRealSignature);
+			this.setSigningLocation(mv.signingLocation);        
+			this.setSigningReason(mv.signingReason);
+			this.setSigningPage(mv.signingPage);
+			this.setCustomSigningPage(mv.customSigningPage);
+			this.setSignatureSize(mv.signatureSize);
+			this.setSignaturePosition(mv.signaturePosition);
 		break;
 		}
 	}

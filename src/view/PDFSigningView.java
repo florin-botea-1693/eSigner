@@ -19,11 +19,14 @@ import model.signing.visible.SignatureSize;
 import model.signing.visible.SigningPage;
 import modelView.PDFSigningModelView;
 import net.miginfocom.swing.MigLayout;
+import utils.PropertyChangeSupportExtended;
 
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -43,7 +46,7 @@ import javax.swing.event.ChangeEvent;
 
 public class PDFSigningView extends JPanel implements PropertyChangeListener {
 
-	private PDFSignerModel signingModel;
+	private PropertyChangeSupportExtended observed;
 	
 	public final JTextField choosedFilesInput;
 	public final JButton chooseFilesButton;
@@ -71,7 +74,7 @@ public class PDFSigningView extends JPanel implements PropertyChangeListener {
 	//=======================||
 	public PDFSigningView() {
 		
-		//this.signingModel = signingModel;
+		this.observed = new PropertyChangeSupportExtended(this);
 		
 		//setPreferredSize(new Dimension(600, 600));
 		
@@ -150,8 +153,26 @@ public class PDFSigningView extends JPanel implements PropertyChangeListener {
 		this.signingLog = new JTextArea();
 		sf.setViewportView(this.signingLog);
 		//sf.setPreferredSize(new Dimension(this.getWidth(), this.getHeight()));
+		addEventsListeners();
 	}
 	
+	//====================||
+	// OBSERVER METHODS
+	//====================||
+	public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        observed.addPropertyChangeListener(pcl);
+    }
+ 
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+    	observed.removePropertyChangeListener(pcl);
+    }
+    
+    public PDFSigningView silenced() {
+		this.observed.skipNextTurn();
+		return this;
+	}
+    //====================\\
+
 	private void setCertificates(Object[] o) {
 		ComboBoxModel cbm = new DefaultComboBoxModel(o);
 		this.certificateSelector.setModel(cbm);
@@ -221,8 +242,167 @@ public class PDFSigningView extends JPanel implements PropertyChangeListener {
 		this.signaturePosition.setSelectedItem(p);
 	}
 
+	//======================================================================================================================||
+	//                                                 SWING EVENTS LISTENERS
+	// - vor fi declansati la orice schimbare, 
+	// - deci ar trebui sa am un filtru pentru specifica daca model a actualizat view, sau view a actualizat model
+	// - trebuie sa fie mereu prezente in View, nu in controller pentru a le putea pune in legatura cu observer-ul
+	// - observer-ul va fi ca un filtru care va spune model-ului ca de la View vin actualizarile.
+	// - in controller voi avea acele metode
+	//======================================================================================================================||
+	public void addEventsListeners() {
+		this.chooseFilesButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setMultiSelectionEnabled(true);
+				fileChooser.setCurrentDirectory(new File("C:\\Users\\user\\Desktop")/*new File(System.getProperty("user.home"))*/);
+				int result = fileChooser.showOpenDialog(null);
+				if (result == JFileChooser.APPROVE_OPTION) {
+					String val = "";
+					for (File f : fileChooser.getSelectedFiles()) {
+						if (val.length() > 0)
+							val += "|";
+						val += f.toString();
+					}
+					choosedFilesInput.setText(val);
+				}
+			}
+		});
+		
+		this.performSignButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//observed.firePropertyChange(propName, oldVal, newVal);
+			}
+		});
+
+		//=================||
+		// CHECKBOXES
+		//=================||
+		this.isVisibleSN.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				observed.firePropertyChange("isVisibleSN", null, isVisibleSN.isSelected());
+			}
+		});
+		// visible reason
+		this.isVisibleReason.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				observed.firePropertyChange("isVisibleReason", null, isVisibleReason.isSelected());
+			}
+		});
+		// visible location
+		this.isVisibleLocation.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				observed.firePropertyChange("isVisibleLocation", null, isVisibleLocation.isSelected());
+			}
+		});
+		// real signature
+		this.isRealSignature.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				observed.firePropertyChange("isRealSignature", null, isRealSignature.isSelected());
+			}
+		});
+		//============================\\
+		
+		//=================||
+		// TEXTFIELDS
+		//=================||
+		this.signingReason.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void insertUpdate(javax.swing.event.DocumentEvent e) {
+				observed.firePropertyChange("signingReason", null, signingReason.getText());
+			}
+			@Override
+			public void removeUpdate(javax.swing.event.DocumentEvent e) {
+				observed.firePropertyChange("signingReason", null, signingReason.getText());
+			}
+			@Override
+			public void changedUpdate(javax.swing.event.DocumentEvent e) {
+				observed.firePropertyChange("signingReason", null, signingReason.getText());
+			}
+		});
+		// location
+		this.signingLocation.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void insertUpdate(javax.swing.event.DocumentEvent e) {
+				observed.firePropertyChange("signingLocation", null, signingLocation.getText());
+			}
+
+			@Override
+			public void removeUpdate(javax.swing.event.DocumentEvent e) {
+				observed.firePropertyChange("signingLocation", null, signingLocation.getText());
+			}
+
+			@Override
+			public void changedUpdate(javax.swing.event.DocumentEvent e) {
+				observed.firePropertyChange("signingLocation", null, signingLocation.getText());
+			}
+		});
+		// signing page customised
+		this.customSigningPage.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void insertUpdate(javax.swing.event.DocumentEvent e) {
+				observed.firePropertyChange("customSigningPage", null, customSigningPage.getText());
+			}
+
+			@Override
+			public void removeUpdate(javax.swing.event.DocumentEvent e) {
+				observed.firePropertyChange("customSigningPage", null, customSigningPage.getText());
+			}
+
+			@Override
+			public void changedUpdate(javax.swing.event.DocumentEvent e) {
+				observed.firePropertyChange("customSigningPage", null, customSigningPage.getText());
+			}
+		});
+		//============================\\
+		
+		//===================||
+		// COMBOBOX (select)
+		//===================||
+		this.signatureVisibility.addActionListener (new ActionListener () {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				observed.firePropertyChange("signatureVisibility", null, signatureVisibility.getSelectedIndex());
+			}
+		});
+		// page
+		this.signingPage.addActionListener (new ActionListener () {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+		    	customSigningPage.setEnabled(false);
+		    	if (signingPage.getSelectedItem() == SigningPage.CUSTOM_PAGE)
+		    		customSigningPage.setEnabled(true);
+				observed.firePropertyChange("signingPage", null, signingPage.getSelectedItem());
+			}
+		});
+		// size
+		this.signatureSize.addActionListener (new ActionListener () {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				observed.firePropertyChange("signatureSize", null, signatureSize.getSelectedItem());
+			}
+		});
+		// position
+		this.signaturePosition.addActionListener (new ActionListener () {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				observed.firePropertyChange("signaturePosition", null, signaturePosition.getSelectedItem());
+			}
+		});
+		//============================\\
+	}
+	//==============================================================================================================\\
+	
+	//==================================================================================================================||
+	//                                               E DE LA MODEL
+	//==================================================================================================================||
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
+		// dezactivam observed-ul la a mai emite evenimente
 		System.out.println(evt.getPropertyName());
 		switch (evt.getPropertyName()) {
 		case "*":
@@ -242,5 +422,7 @@ public class PDFSigningView extends JPanel implements PropertyChangeListener {
 			this.setSignaturePosition(mv.signaturePosition);
 		break;
 		}
+		// reactivam observed-ul pentru a emite evenimente in continuare
 	}
+	//==============================================================================================================\\
 }

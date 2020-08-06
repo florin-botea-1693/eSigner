@@ -4,6 +4,7 @@ import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -125,6 +126,7 @@ public class App {
 		PDFSigningView view = new PDFSigningView();// remove argument, voi avea o metoda call initial in registet ce va pune un model-view in view
 		model.addPropertyChangeListener(view);
 		controller = new PDFSigningController(model, view);
+		view.addPropertyChangeListener((PropertyChangeListener) controller);
 
 		frame.setContentPane(view);
 		frame.repaint();

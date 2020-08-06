@@ -4,6 +4,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import model.PDFSignerModel;
 import model.certificates.Certificate;
@@ -21,7 +23,7 @@ import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import java.io.File;
 import java.io.IOException; 
 
-public class PDFSigningController {
+public class PDFSigningController implements PropertyChangeListener {
 	PDFSignerModel model;
 	PDFSigningView view;
 
@@ -31,7 +33,7 @@ public class PDFSigningController {
 		this.model = model;
 		this.view = view;
 		
-		addEventsListeners();
+		//addEventsListeners();
 	}
 	
 	public void callSigningProcess() {
@@ -77,13 +79,6 @@ public class PDFSigningController {
 		});
 
 		// CHECKBOXEX
-		// visible sn
-		view.isVisibleSN.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				model.silenced().setVisibleSN(view.isVisibleSN.isSelected());
-			}
-		});
 		// visible reason
 		view.isVisibleReason.addItemListener(new ItemListener() {
 			@Override
@@ -182,9 +177,6 @@ public class PDFSigningController {
 		// page
 		view.signingPage.addActionListener (new ActionListener () {
 		    public void actionPerformed(ActionEvent e) {
-		    	view.customSigningPage.setEnabled(false);
-		    	if (view.signingPage.getSelectedItem() == SigningPage.CUSTOM_PAGE)
-		    		view.customSigningPage.setEnabled(true);
 		    	model.setSigningPage((SigningPage) view.signingPage.getSelectedItem());
 		    }
 		});
@@ -200,5 +192,83 @@ public class PDFSigningController {
 		    	model.setSignaturePosition((SignaturePosition) view.signaturePosition.getSelectedItem());
 		    }
 		});
+	}
+
+	//===================================================================================================================||
+	// 													ROUTER
+	// ASTA E UN FEL DE ROUTER, porneste de la view <--- trebuie sa fie cat mai dumb posibil
+	//===================================================================================================================||
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		// e de la view, deci dezactivam observed-ul model la a mai emite evenimente
+		switch (evt.getPropertyName()) {
+		case "isVisibleSN": setVisibleSerialNumber(evt.getNewValue());
+		break;
+		case "isVisibleReason": setVisibleReason(evt.getNewValue());
+		break;
+		case "isVisibleLocation": setVisibleLocation(evt.getNewValue());
+		break;
+		case "isRealSignature": setRealSignature(evt.getNewValue());
+		break;
+		case "signingReason": setSigningReason(evt.getNewValue());
+		break;
+		case "signingLocation": setSigninLocation(evt.getNewValue());
+		break;
+		case "customSigningPage": setCustomSigningPage(evt.getNewValue());
+		break;
+		case "signatureVisibility": setSignatureVisibility(evt.getNewValue());
+		break;
+		case "signingPage": setSigningPage(evt.getNewValue());
+		break;
+		case "signatureSize": setSignatureSize(evt.getNewValue());
+		break;
+		case "signaturePosition": setSignaturePosition(evt.getNewValue());
+		break;
+		}
+		// reactivam observed-ul model pentru a emite in continuare evenimente
+	}
+
+	private void setVisibleSerialNumber(Object newValue) {
+		System.out.println("a");
+	}
+
+	private void setVisibleReason(Object newValue) {
+		System.out.println("a");
+	}
+
+	private void setVisibleLocation(Object newValue) {
+		System.out.println("a");
+	}
+
+	private void setRealSignature(Object newValue) {
+		System.out.println("a");
+	}
+
+	private void setSigningReason(Object newValue) {
+		System.out.println("a");
+	}
+
+	private void setSigninLocation(Object newValue) {
+		System.out.println("a");
+	}
+
+	private void setCustomSigningPage(Object newValue) {
+		System.out.println("a");
+	}
+
+	private void setSignatureVisibility(Object newValue) {
+		System.out.println("a");
+	}
+
+	private void setSigningPage(Object newValue) {
+		System.out.println("a");
+	}
+
+	private void setSignatureSize(Object newValue) {
+		System.out.println("a");
+	}
+
+	private void setSignaturePosition(Object newValue) {
+		System.out.println("a");
 	}
 }

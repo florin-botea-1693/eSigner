@@ -54,7 +54,6 @@ import model.signing.visible.SignatureAspectDelegate;
 import model.signing.visible.SignaturePosition;
 import model.signing.visible.SignatureSize;
 import model.signing.visible.SigningPage;
-import modelView.PDFSigningModelView;
 import utils.PropertyChangeSupportExtended;
 
 /*
@@ -106,12 +105,14 @@ public final class PDFSignerModel {
 		this.settings = settings;
 		this.certificatesHolder = certificatesHolder;
 		
+		this.signatureAspect = SignatureAspectDelegate.getAspect("BasicSignatureAspect");
+		
 		CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
 		this.service = new PAdESService(commonCertificateVerifier);
 		this.service.setPdfObjFactory(new PdfBoxNativeObjectFactory());
 		this.padesParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
 		
-		this.loadFromSettings();
+		loadFromSettings();
 	}
 	//===================\\
 	
@@ -126,24 +127,6 @@ public final class PDFSignerModel {
 		
 		getSigningMode(mode).performSign(file);
 	}
-	
-	//====================||
-	// OBSERVER METHODS
-	//====================||
-	public void addPropertyChangeListener(PropertyChangeListener pcl) {
-        observed.addPropertyChangeListener(pcl);
-        pcl.propertyChange(new PropertyChangeEvent(this, "*",  null, this.toModelView()));
-    }
- 
-    public void removePropertyChangeListener(PropertyChangeListener pcl) {
-    	observed.removePropertyChangeListener(pcl);
-    }
-    
-    public PDFSignerModel silenced() {
-		this.observed.skipNextTurn();
-		return this;
-	}
-    //====================\\
 	
 	private SigningMode getSigningMode(String m) {
 		SigningMode sm = null;
@@ -165,42 +148,90 @@ public final class PDFSignerModel {
 	}
 	
 	//====================||
-	// OBSERVABLE SETTERS
+	// OBSERVER METHODS
 	//====================||
+
+	public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        observed.addPropertyChangeListener(pcl);
+        updateObserver(pcl);
+    }
+ 
+    private void updateObserver(PropertyChangeListener pcl) {
+    	pcl.propertyChange(new PropertyChangeEvent(this, "certificates", null, certificatesHolder.getCertificates()));
+    	pcl.propertyChange(new PropertyChangeEvent(this, "selectedCertificate", null, certificatesHolder.getSelectedCertificate()));
+    	pcl.propertyChange(new PropertyChangeEvent(this, "isVisibleSN", null, this.isVisibleSerialNumber()));
+    	pcl.propertyChange(new PropertyChangeEvent(this, "signingReason", null, this.getSigningReason()));
+    	pcl.propertyChange(new PropertyChangeEvent(this, "isVisibleSigningReason", null, this.isVisibleReason()));
+    	pcl.propertyChange(new PropertyChangeEvent(this, "signingLocation", null, this.getSigningLocation()));
+    	pcl.propertyChange(new PropertyChangeEvent(this, "isVisibleLocation", null, this.isVisibleLocation()));
+    	pcl.propertyChange(new PropertyChangeEvent(this, "signatureVisibility", null, this.isVisibleSignature));
+    	pcl.propertyChange(new PropertyChangeEvent(this, "signingPage", null, this.getSigningPage()));
+    	pcl.propertyChange(new PropertyChangeEvent(this, "isRealSignature", null, this.isRealSignature()));
+    	pcl.propertyChange(new PropertyChangeEvent(this, "customSigningPage", null, this.getCustomSigningPage()));
+    	pcl.propertyChange(new PropertyChangeEvent(this, "signaturePosition", null, this.getSignaturePosition()));
+    	pcl.propertyChange(new PropertyChangeEvent(this, "signatureSize", null, this.getSignatureSize()));
+    }
+    
+	public void removePropertyChangeListener(PropertyChangeListener pcl) {
+    	observed.removePropertyChangeListener(pcl);
+    }
+	
+	public PDFSignerModel ignoreNextEvent() {
+		observed.ignoreNextEvent();
+		return this;
+	}
+  
+    //========================================================================================================
+	
+	//====================||
+	// OBSERVABLE SETTERS
+    // !!! - daca oldVal == newVal, asta nu mai emite nimic, am testat eu
+	//====================||
+	public void refreshCertificatesList() {
+		observed.firePropertyChange("certificates", null, certificatesHolder.getCertificates());
+	}
+	
 	public void setSigningCertificate(Certificate cert) {
+		observed.firePropertyChange("selectedCertificate", null, cert);
+		if (cert == null) return;
+		this.padesParameters.setSigningCertificate(cert.getPrivateKey().getCertificate());
+		this.padesParameters.setCertificateChain(cert.getPrivateKey().getCertificateChain());
 		padesParameters.setSigningCertificate(cert.getPrivateKey().getCertificate());
 		padesParameters.setCertificateChain(cert.getPrivateKey().getCertificateChain());
 		certificatesHolder.selectCertificate(cert);
 		signatureAspect.setCertificate(cert);
-		this.observed.firePropertyChange("certificate", null, null);
 	}
 	
 	public void setSignatureSize(SignatureSize size) {
 		signatureAspect.setSize(size);
+		observed.firePropertyChange("signatureSize", null, size);
 	}
 
-	public void setVisibleSignature(boolean b) { System.out.println("setting visible signature to " + b);
+	public void setVisibleSignature(boolean b) {
 		isVisibleSignature = b;
+		this.observed.firePropertyChange("signatureVisibility", null, b);
 	}
 	
 	public void setVisibleSN(boolean b) {
 		this.signatureAspect.setVisibleSerialNumber(b);
+		this.observed.firePropertyChange("isVisibleSN", false, b);
 	}
 
-	public void setSigningReason(String text, boolean visible) {
+	public void setSigningReason(String text) {
 		padesParameters.setReason(text);
-		String visibleReason = visible ? text : null;
-		signatureAspect.setReason(visibleReason);
+		signatureAspect.setReason(text);
+		this.observed.firePropertyChange("signingReason", null, text);
 	}
 
-	public void setSigningLocation(String text, boolean visible) {
+	public void setSigningLocation(String text) {
 		padesParameters.setLocation(text);
-		String visibleLocation = visible ? text : null;
-		signatureAspect.setLocation(visibleLocation);
+		signatureAspect.setLocation(text);
+		observed.firePropertyChange("signingLocation", null, text);
 	}
 
 	public void setIsRealSignature(boolean b) {
-		isRealSignature = b;
+		this.isRealSignature = b;
+		this.observed.firePropertyChange("isRealSignature", null, b);
 	}
 
 	public void setSigningPage(SigningPage sp) {
@@ -220,49 +251,58 @@ public final class PDFSignerModel {
 	}
 	// for custom page
 	public void setSigningPage(int sp) {
-		this.signatureAspect.setPage(sp);
+		signatureAspect.setPage(sp);
+		observed.firePropertyChange("signingPage", null, sp);
 	}
 	
 	public void setSignaturePosition(SignaturePosition position) {
 		signatureAspect.setPosition(position);
+		observed.firePropertyChange("signaturePosition", null, position);
+	}
+	
+	public void setVisibleReason(boolean b) {
+		boolean oldVal = signatureAspect.isVisibleReason();
+		signatureAspect.setVisibleReason(b);
+		observed.firePropertyChange("isVisibleReason", oldVal, b);
+	}
+	
+	public void setVisibleLocation(boolean b) {
+		boolean oldVal = signatureAspect.isVisibleLocation();
+		signatureAspect.setVisibleLocation(b);
+		observed.firePropertyChange("isVisibleLocation", oldVal, b);
 	}
 	//==================================\\
-
-	public PDFSigningModelView toModelView() {
-		return new PDFSigningModelView(this);
-	}
 
 	//===============================================================||
 	// Model can save that stats in a prop file for preferences
 	// now, we setup model from preferences
 	//===============================================================||
-	private void loadFromSettings() {
+	public void loadFromSettings() {
 		String certSN = this.settings.getPreferredCertificate();
 		this.loadFromSettings(certSN);
 	}
 
 	private void loadFromSettings(String certSN) {
-		this.settings.setCertificate(certSN);
+		settings.setCertificate(certSN);
 		// aici ar trebui sa setez si in certificateholder certificatul implicit
-
+		signatureAspect = SignatureAspectDelegate.getAspect("BasicSignatureAspect");
 		// options get based on prefered certificate
 		// set with view listening
-		Certificate cert = null; //certificatesHolder.getSelectedCertificate();
-		// no certificate
-		signatureAspect = SignatureAspectDelegate.getAspect("BasicSignatureAspect");
-		
-		/* configure aspect based on app config data */
-		
-		this.setSigningReason(this.settings.getSigningReason(), this.settings.isVisibleReason());
-		this.setSigningLocation(this.settings.getSigningLocation(), this.settings.isVisibleLocation());
-		this.setVisibleSN(this.settings.isVisibleSerialNumber());
-		
+		Certificate cert = certificatesHolder.findBySerialNumber(certSN);
+		setSigningCertificate(cert);
+		setSigningReason(settings.getSigningReason());
+		setVisibleReason(settings.isVisibleReason());
+		setSigningLocation(settings.getSigningLocation());
+		setVisibleLocation(settings.isVisibleLocation());
+		setVisibleSN(settings.isVisibleSerialNumber());
+		setSignatureSize(settings.getSignatureSize());
+		setSignaturePosition(settings.getSignaturePosition());
+		setSigningPage(settings.getSigningPage());
+		setIsRealSignature(settings.isRealSignature());
+		setSigningPage(settings.getCustomSigningPage());
 		
 		/* configure signature presentation data */
-		
-		if (cert == null) return;
-		this.padesParameters.setSigningCertificate(cert.getPrivateKey().getCertificate());
-		this.padesParameters.setCertificateChain(cert.getPrivateKey().getCertificateChain());
+
 		//certificatesHolder.selectCertificate(cert);
 		/* !!cel mai important!! nu pot construi grafica semnatura fara un certificat */
 		//signatureAspect.setCertificate(cert);

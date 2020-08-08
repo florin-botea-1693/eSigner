@@ -20,6 +20,8 @@ public abstract class SignatureAspect {
 	private SignaturePosition signaturePosition;
 	private SignatureSize signatureSize;
 	protected boolean isVisibleSerialNumber = false;
+	protected boolean isVisibleReason = false;
+	protected boolean isVisibleLocation = false;
 	protected String reason = null;
 	protected String location = null;
 	
@@ -70,6 +72,14 @@ public abstract class SignatureAspect {
 		isVisibleSerialNumber = b;
 		this.needsRedraw = true;
 	}
+	
+	public void setVisibleReason(boolean b) {
+		this.isVisibleReason = b;
+	}
+	
+	public void setVisibleLocation(boolean b) {
+		this.isVisibleLocation = b;
+	}
 
 	public void setCertificate(Certificate cert) {
 		this.cert = cert;
@@ -119,20 +129,13 @@ public abstract class SignatureAspect {
 		return this.signatureSize;
 	}
 	public boolean isVisibleReason() {
-		if (this.reason != null) {
-			return true;
-		}
-		return false;
+		return this.isVisibleReason;
 	}
 	public boolean isVisibleLocation() {
-		if (this.location != null) {
-			return true;
-		}
-		return false;
+		return this.isVisibleLocation;
 	}
 	public boolean isVisibleSerialNumber() {
 		return this.isVisibleSerialNumber;
 	}
-	
 	
 }

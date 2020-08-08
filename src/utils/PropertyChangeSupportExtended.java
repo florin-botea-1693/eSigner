@@ -4,7 +4,8 @@ import java.beans.PropertyChangeSupport;
 
 public class PropertyChangeSupportExtended extends PropertyChangeSupport {
 	
-	private boolean skipNextTurn = false;
+	private boolean pauseNextTurn = false;
+	private boolean disabled = false;
 	
 	public PropertyChangeSupportExtended(Object subject) {
 		super(subject);
@@ -12,11 +13,16 @@ public class PropertyChangeSupportExtended extends PropertyChangeSupport {
 	
 	@Override
 	public void firePropertyChange(String propName, Object oldVal, Object newVal) {
-		if (!this.skipNextTurn) super.firePropertyChange(propName, oldVal, newVal);
-		this.skipNextTurn = false;
+		if (!pauseNextTurn && !disabled) super.firePropertyChange(propName, oldVal, newVal);
+		pauseNextTurn = false;
 	}
 	
-	public void skipNextTurn() {
-		this.skipNextTurn = true;
+	public void ignoreNextEvent() {
+		pauseNextTurn = true;
 	}
+
+	public void silencedEvents(boolean b) {
+		disabled = b;
+	}
+
 }

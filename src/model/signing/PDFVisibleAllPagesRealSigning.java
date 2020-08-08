@@ -48,6 +48,7 @@ public class PDFVisibleAllPagesRealSigning implements SigningMode {
 		for (int i=1; i <= pdDocument.getNumberOfPages(); i++) {
 			FileDocument toSignDocument = new FileDocument(new File(currentPath));
 			this.signatureAspect.setPage(i);
+			this.padesParameters.setSignatureFieldId(null);
 			this.padesParameters.setImageParameters(this.signatureAspect.getSIP());
 			ToBeSigned dataToSign = this.service.getDataToSign(toSignDocument, this.padesParameters);
 			SignatureValue signatureValue = token.sign(dataToSign, this.padesParameters.getDigestAlgorithm(), cert.getPrivateKey());

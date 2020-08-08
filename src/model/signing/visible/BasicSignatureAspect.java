@@ -47,8 +47,8 @@ public class BasicSignatureAspect extends SignatureAspect {
 		String text = "";
 		text += ("Digitally signed by " + cert.getHolderNameName()) + "\n";
 		text += isVisibleSerialNumber ? ("SN: " + cert.getSerialNumber() + "\n") : "";
-		text += reason != null ? ("Reason: " + reason + "\n") : "";
-		text += location != null ? ("Location: " + location + "\n") : "";
+		text += this.isVisibleReason ? ("Reason: " + reason + "\n") : "";
+		text += this.isVisibleLocation ? ("Location: " + location + "\n") : "";
 		text += "Date: 16.06.1993";
 		return text;
 	}

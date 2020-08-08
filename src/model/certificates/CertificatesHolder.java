@@ -9,4 +9,6 @@ public interface CertificatesHolder {
     public List<Certificate> getCertificates();
     public Certificate getSelectedCertificate();
     public void selectCertificate(Certificate cert);
+	public void selectCertificate(String certSN);
+	public Certificate findBySerialNumber(String certSN);
 }

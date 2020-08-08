@@ -1,5 +1,6 @@
 package controller;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -13,13 +14,29 @@ import model.signing.PDFSigningOptions;
 import model.signing.visible.SignaturePosition;
 import model.signing.visible.SignatureSize;
 import model.signing.visible.SigningPage;
+import view.CancelListener;
+import view.DisabledGlassPane;
 import view.PDFSigningView;
+import view.SigningMessage;
+import view.SigningMessage2;
+import view.SigningMessage3;
+import view.SigningMessage4;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRootPane;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
+import org.apache.commons.lang3.mutable.MutableInt;
 
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
@@ -42,6 +59,7 @@ public class PDFSigningController {
 	
 	public void init() {
 		view.signingLog.setEditable(false);
+		view.setOpaque(false);
 		//========================================||
 		// VIEW -> MODEL
 		//========================================||
@@ -146,6 +164,12 @@ public class PDFSigningController {
 				}
 				catch (NumberFormatException exception) {}
 			}
+		});
+		
+		view.certificateSelector.addActionListener (new ActionListener () {
+		    public void actionPerformed(ActionEvent e) {
+		    	model.setSigningCertificate((Certificate) view.certificateSelector.getSelectedItem());;
+		    }
 		});
 		
 		view.signatureVisibility.addActionListener (new ActionListener () {
@@ -253,19 +277,49 @@ public class PDFSigningController {
 	public void callSigningProcess() {
 		view.signingLog.setText("");
 		Certificate cert = (Certificate) view.certificateSelector.getSelectedItem();
-		for (File file : selectedFiles) {
-			String sep = view.signingLog.getText().length() > 0 ? "\n" : "";
-			try {
-				// aici voi avea altfel
-				// pdfSigner nu se va mai numi asa, ci PDFSigningConfig
-				// Signer.sign(pdfSigningConfig, file);
-				// Signer va decide singur bazandu-se pe parametrii lui sign ce sa instantieze si cum sa semneze
-				model.sign(file);
-				view.signingLog.setText(view.signingLog.getText() + sep + "Successfully signed " + file.getName());
-			} catch (IOException e) {
-				view.signingLog.setText(view.signingLog.getText() + sep + e.getMessage());
-				e.printStackTrace();
+
+		final SigningMessage dialog = new SigningMessage();
+		dialog.getCancelButton().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dialog.dispose();
 			}
-		}
+		});
+		
+		//view.getParentJFrame().setEnabled(false);
+		dialog.setModal(false);
+		dialog.setVisible(true);
+		
+	    new Thread(new Runnable() {
+	        public void run() {
+	    		for (int i=0; i<selectedFiles.length; i++) {
+	    			File file = selectedFiles[i];
+	    			
+	    			String sep = view.signingLog.getText().length() > 0 ? "\n" : "";
+	    			try {
+	    				model.sign(file);
+	    				//view.signingLog.setText(view.signingLog.getText() + sep + "Successfully signed " + file.getName());
+	    			} catch (Exception e) {
+	    				//view.signingLog.setText(view.signingLog.getText() + sep + e.getMessage());
+	    				e.printStackTrace();
+	    			}
+	    		}
+	        }
+	     }).start();
+		
+		// set counter
+		//dialog.update("foozz"); <--asta merge
+
+		/*
+		for (int i=0; i<selectedFiles.length; i++) {dialog.update("foozz"); // <-- asta nu merge...
+			File file = selectedFiles[i];
+			//dialog.setSigningLabel("Signing " + file.getName());
+			// set counter
+			dialog.update("Signing " + file.getName());
+
+		}*/
+		//view.getParentJFrame().setEnabled(true);
+
+		System.out.println("boom");
+		//dialog.setSigningFile("fooo bar");
 	}
 }

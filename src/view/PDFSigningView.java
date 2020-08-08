@@ -22,6 +22,7 @@ import utils.PropertyChangeSupportExtended;
 
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -44,6 +45,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 
 public class PDFSigningView extends JPanel {
+	private final JFrame parent;
 
 	private PropertyChangeSupportExtended observed;
 	
@@ -67,11 +69,14 @@ public class PDFSigningView extends JPanel {
 	private JLabel lblNewLabel;
 	private JLabel customPageL;
 	public final JLabel label_serialNumber;
+	
+	public JFrame getParentJFrame() { return parent;}
 
 	//=======================||
 	// >>> CREATE VISUAL <<<
 	//=======================||
-	public PDFSigningView() {
+	public PDFSigningView(JFrame parent) {
+		this.parent = parent;
 		
 		this.observed = new PropertyChangeSupportExtended(this);
 		

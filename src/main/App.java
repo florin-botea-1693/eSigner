@@ -19,6 +19,8 @@ import java.util.Iterator;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -28,6 +30,7 @@ import model.PDFSignerModel;
 import model.certificates.MSCAPICertificatesHolder;
 import model.signing.PDFSigningOptions;
 import model.signing.visible.SignaturePosition;
+import view.DisabledGlassPane;
 import view.PDFSigningView;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
@@ -123,7 +126,7 @@ public class App {
 		AppSettings settings = AppSettings.getInstance();
 	
 		PDFSignerModel model = new PDFSignerModel(certificatesHolder, settings);
-		PDFSigningView view = new PDFSigningView();// remove argument, voi avea o metoda call initial in registet ce va pune un model-view in view
+		PDFSigningView view = new PDFSigningView(frame);// remove argument, voi avea o metoda call initial in registet ce va pune un model-view in view
 		controller = new PDFSigningController(model, view);
 
 		frame.setContentPane(view);

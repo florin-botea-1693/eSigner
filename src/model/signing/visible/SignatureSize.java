@@ -1,15 +1,18 @@
 package model.signing.visible;
 
 public enum SignatureSize {
-	SMALL(0, "Small"),
-	MEDIUM(1, "Medium"),
-	LARGE(2, "Large");
+	SMALL(120, 50),
+	MEDIUM(150, 70),
+	LARGE(240, 100);
 	
-	public final int index;
-	public final String name;
+	private final int width;
+	private final int height;
 	
-    private SignatureSize(int index, String name) {
-        this.index = index;
-        this.name = name;
+	public int getWidth() {return width;}
+	public int getHeight() {return height;}
+	
+    private SignatureSize(int width, int height) {
+        this.width = width;
+        this.height = height;
     }
 }

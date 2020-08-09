@@ -15,28 +15,38 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.JProgressBar;
 
 public class SigningMessage extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
-	private JTextField signingFile;
 	private JButton cancelButton;
+	private JLabel currentFile;
+	private JProgressBar progressBar;
+	private JLabel range;
 
 	public SigningMessage() {
-		//this.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 		setTitle("Signing...");
-		setBounds(100, 100, 308, 110);
+		setBounds(100, 100, 308, 98);
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(null);
 		
-		signingFile = new JTextField();
-		signingFile.setBounds(10, 11, 272, 20);
-		contentPanel.add(signingFile);
-		signingFile.setColumns(10);
+		currentFile = new JLabel("Signing...");
+		currentFile.setBounds(10, 11, 272, 14);
+		contentPanel.add(currentFile);
+		
+		range = new JLabel("0/0");
+		range.setBounds(172, 36, 46, 14);
+		contentPanel.add(range);
+		
+		progressBar = new JProgressBar();
+		progressBar.setBounds(10, 36, 152, 14);
+		contentPanel.add(progressBar);
 		
 		cancelButton = new JButton("Cancel");
-		cancelButton.setBounds(217, 37, 65, 23);
+		cancelButton.setBounds(217, 27, 65, 23);
 		contentPanel.add(cancelButton);
 	}
 	
@@ -44,7 +54,13 @@ public class SigningMessage extends JDialog {
 		return cancelButton;
 	}
 	
-	public JTextField getSigningFile() {
-		return signingFile;
+	public void update(String signingFile, int[] range) {
+		this.currentFile.setText("Signing " + signingFile);
+		this.range.setText(String.valueOf(range[0]) + "/" + String.valueOf(range[1]));
+		this.progressBar.setMinimum(0);
+		this.progressBar.setMaximum(range[1]);
+		this.progressBar.setValue(range[0]);
+		this.getContentPane().revalidate();
+		this.getContentPane().repaint();
 	}
 }

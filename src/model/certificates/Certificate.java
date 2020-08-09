@@ -19,7 +19,7 @@ public class Certificate {
     	SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
     	String expirationDate = dateFormat.format(this.privateKey.getCertificate().getCertificate().getNotAfter());
     	
-		return userName + " {" + sn + ") " + expirationDate;
+		return userName + expirationDate;
 	}
 	
 	public DSSPrivateKeyEntry getPrivateKey() {
@@ -48,6 +48,11 @@ public class Certificate {
 	}
 
 	public String getSerialNumber() {
-		return this.privateKey.getCertificate().getCertificate().getSerialNumber().toString(16);
+		String sn = privateKey.getCertificate().getCertificate().getSerialNumber().toString(16).toUpperCase();
+		String formattedSN = "";
+		for (int i=0; i<sn.length(); i++) {
+			formattedSN += (i%2 == 0 && i > 0 ? " " : "") + sn.charAt(i);
+		}
+		return formattedSN;
 	}
 }

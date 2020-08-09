@@ -14,13 +14,8 @@ import model.signing.PDFSigningOptions;
 import model.signing.visible.SignaturePosition;
 import model.signing.visible.SignatureSize;
 import model.signing.visible.SigningPage;
-import view.CancelListener;
-import view.DisabledGlassPane;
 import view.PDFSigningView;
 import view.SigningMessage;
-import view.SigningMessage2;
-import view.SigningMessage3;
-import view.SigningMessage4;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -36,6 +31,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
@@ -92,6 +88,13 @@ public class PDFSigningController {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				model.setVisibleReason(view.isVisibleReason.isSelected());
+			}
+		});
+		
+		view.isVisibleSN.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				model.setVisibleSN(view.isVisibleSN.isSelected());
 			}
 		});
 
@@ -275,51 +278,42 @@ public class PDFSigningController {
 	}
 	
 	public void callSigningProcess() {
-		view.signingLog.setText("");
+		MutableBoolean continueSigning = new MutableBoolean(true);
+		view.clearLog();
 		Certificate cert = (Certificate) view.certificateSelector.getSelectedItem();
 
 		final SigningMessage dialog = new SigningMessage();
 		dialog.getCancelButton().addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				continueSigning.setValue(false);
 				dialog.dispose();
 			}
 		});
 		
-		//view.getParentJFrame().setEnabled(false);
+		view.getParentJFrame().setEnabled(false);
 		dialog.setModal(false);
 		dialog.setVisible(true);
 		
 	    new Thread(new Runnable() {
 	        public void run() {
 	    		for (int i=0; i<selectedFiles.length; i++) {
+	    			if (!continueSigning.booleanValue())
+	    				continue;
 	    			File file = selectedFiles[i];
+	    			dialog.update(file.getName(), new int[] {i, selectedFiles.length});
 	    			
 	    			String sep = view.signingLog.getText().length() > 0 ? "\n" : "";
 	    			try {
 	    				model.sign(file);
-	    				//view.signingLog.setText(view.signingLog.getText() + sep + "Successfully signed " + file.getName());
+	    				view.logSuccessln(file.getName() + " successfully signed");
 	    			} catch (Exception e) {
-	    				//view.signingLog.setText(view.signingLog.getText() + sep + e.getMessage());
+	    				view.logErrorln(e.getMessage());
 	    				e.printStackTrace();
 	    			}
 	    		}
+	    		view.getParentJFrame().setEnabled(true);
+	    		dialog.dispose();
 	        }
 	     }).start();
-		
-		// set counter
-		//dialog.update("foozz"); <--asta merge
-
-		/*
-		for (int i=0; i<selectedFiles.length; i++) {dialog.update("foozz"); // <-- asta nu merge...
-			File file = selectedFiles[i];
-			//dialog.setSigningLabel("Signing " + file.getName());
-			// set counter
-			dialog.update("Signing " + file.getName());
-
-		}*/
-		//view.getParentJFrame().setEnabled(true);
-
-		System.out.println("boom");
-		//dialog.setSigningFile("fooo bar");
 	}
 }

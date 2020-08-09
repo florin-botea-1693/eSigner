@@ -26,14 +26,9 @@ public class BasicSignatureAspect extends SignatureAspect {
 		_getSIP().setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.LEFT);
 		_getSIP().setAlignmentVertical(VisualSignatureAlignmentVertical.MIDDLE);
 		
-		String unformattedText = "Digitally Signed by Botea Florin\nDate: 23.07.2020 +3000 gtm";
-		Font font = new Font("arial", Font.PLAIN, 1);
-		ArrayList<Object> content = textFit.fit(unformattedText, 100, 50, font);
-		
-		this.formattedText = (String) content.get(1);
-		tp.setText((String) content.get(1));
+		tp.setText("Error");
 		tp.setFont(new DSSJavaFont("arial"));
-		tp.setSize((int) content.get(0));
+		tp.setSize(12);
 		
 		tp.setPadding(4);
 		_getSIP().setTextParameters(tp);

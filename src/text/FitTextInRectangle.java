@@ -154,4 +154,25 @@ public class FitTextInRectangle {
 		//String str = "Digitally Signed by Florin Botea\n"+"Reason: semnez acest document ca asa vreau eu\n"+"Location: la mine acasa";
 		//ArrayList<Object> result = app.fit(str, 70, 100, new Font("arial", Font.PLAIN, 1));
 	}
+
+	public int sizeInHeight(String text, Font font, int heightLimit) {
+		String[] rows = text.split("\n");
+		
+		String fontName = font.getName();
+		int fontStyle = Font.PLAIN;
+		int fontSize = 1;
+
+		int textHeight = 0;
+		String resultText = "";
+		String tmpResultText = "";
+		while (textHeight <= heightLimit) {
+			resultText = tmpResultText;
+			Font _font = new Font(fontName, fontStyle, fontSize);
+			fm = jLabel.getFontMetrics(_font);
+			double rowHeight = fm.getHeight();
+			textHeight = (int) (rowHeight * rows.length);
+			fontSize++;
+		}
+		return fontSize-1;
+	}
 }

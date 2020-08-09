@@ -30,7 +30,6 @@ import model.PDFSignerModel;
 import model.certificates.MSCAPICertificatesHolder;
 import model.signing.PDFSigningOptions;
 import model.signing.visible.SignaturePosition;
-import view.DisabledGlassPane;
 import view.PDFSigningView;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
@@ -88,7 +87,7 @@ public class App {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 450, 400);
+		frame.setBounds(100, 100, 500, 450);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		// MENU BAR

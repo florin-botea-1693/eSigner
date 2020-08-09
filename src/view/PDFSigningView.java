@@ -9,6 +9,10 @@ import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 import org.w3c.dom.events.DocumentEvent;
 
@@ -35,6 +39,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import javax.swing.JLabel;
@@ -61,7 +66,7 @@ public class PDFSigningView extends JPanel {
 	public final JTextField customSigningPage;
 	public final JComboBox signatureSize;
 	public final JComboBox signaturePosition;
-	public final JTextArea signingLog;
+	public final JTextPane signingLog;
 	public final JCheckBox isVisibleReason;
 	public final JCheckBox isVisibleLocation;
 	public final JCheckBox isVisibleSN;
@@ -69,6 +74,9 @@ public class PDFSigningView extends JPanel {
 	private JLabel lblNewLabel;
 	private JLabel customPageL;
 	public final JLabel label_serialNumber;
+	
+	private Style successStyle;
+	private Style errorStyle;
 	
 	public JFrame getParentJFrame() { return parent;}
 
@@ -84,7 +92,7 @@ public class PDFSigningView extends JPanel {
 		
 		setAutoscrolls(true);
 		
-		setLayout(new MigLayout("", "[128.00,grow][220][260,grow][142.00][112.00][50.00,grow][][24.00]", "[][36.00][27.00][29.00][][31.00][][31.00][][29.00][36.00][61.00,grow]"));
+		setLayout(new MigLayout("", "[128.00,grow][220][260,grow][142.00][112.00]", "[][36.00][27.00][29.00][][31.00][][31.00][][29.00][25.00][400,grow,fill]"));
 		
 		choosedFilesInput = new JTextField();
 		choosedFilesInput.setColumns(10);
@@ -114,7 +122,7 @@ public class PDFSigningView extends JPanel {
 		add(this.isVisibleReason, "cell 4 4,alignx right");
 		
 		JLabel label_location = new JLabel("Location");
-		add(label_location, "cell 0 5 6 1");
+		add(label_location, "cell 0 5 5 1");
 		this.signingLocation = new JTextField();
 		add(this.signingLocation, "cell 0 6 4 1,growx");
 		signingLocation.setColumns(10);
@@ -154,9 +162,40 @@ public class PDFSigningView extends JPanel {
 		sf.setPreferredSize(new Dimension(200, 100));
 		add(sf, "cell 0 11 5 1,growx");
 		
-		this.signingLog = new JTextArea();
+		this.signingLog = new JTextPane();
 		sf.setViewportView(this.signingLog);
 		//sf.setPreferredSize(new Dimension(this.getWidth(), this.getHeight()));
-		//addEventsListeners();
+
+		successStyle = signingLog.addStyle("success", null);
+		StyleConstants.setForeground(successStyle, Color.GREEN);
+		errorStyle = signingLog.addStyle("error", null);
+		StyleConstants.setForeground(errorStyle, Color.RED);
+	}
+	
+	public void logSuccessln(String message) {
+		StyledDocument doc = signingLog.getStyledDocument();
+		try {
+			doc.insertString(0, (doc.getLength() > 0 ? "\n" : "")+message, successStyle);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void logErrorln(String message) {
+		StyledDocument doc = signingLog.getStyledDocument();
+		try {
+			doc.insertString(0, (doc.getLength() > 0 ? "\n" : "")+message, errorStyle);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void clearLog() {
+		StyledDocument doc = signingLog.getStyledDocument();
+		try {
+			doc.remove(0, doc.getLength());
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
 	}
 }

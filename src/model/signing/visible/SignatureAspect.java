@@ -1,5 +1,11 @@
 package model.signing.visible;
 
+import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Calendar;
+import java.util.Date;
+
 import org.apache.pdfbox.pdmodel.PDPage;
 
 import eu.europa.esig.dss.model.pades.SignatureImageParameters;
@@ -39,8 +45,10 @@ public abstract class SignatureAspect {
 	//===============================||
 	public SignatureImageParameters getSIP() {
 		if (needsRedraw) {
+			System.out.println("Constructing signature aspect");
 			reDraw();
 		} else {
+			System.out.println("Refreshing signature aspect");
 			refresh();
 		}
 		return sip;
@@ -68,7 +76,7 @@ public abstract class SignatureAspect {
 		this.needsRedraw = true;
 	}
 
-	public void setVisibleSerialNumber(boolean b) {
+	public void setVisibleSerialNumber(boolean b) {System.out.println("isVisibleSerialNumber="+String.valueOf(b));
 		isVisibleSerialNumber = b;
 		this.needsRedraw = true;
 	}
@@ -88,39 +96,15 @@ public abstract class SignatureAspect {
 
 	public void setSize(SignatureSize size) {
 		this.signatureSize = size;
-		switch (size) {
-			case SMALL:
-				this.sip.setWidth(120);
-				this.sip.setHeight(50);
-			break;
-			case MEDIUM:
-				this.sip.setWidth(150);
-				this.sip.setHeight(70);
-			break;
-			case LARGE:
-				this.sip.setWidth(240);
-				this.sip.setHeight(100);
-			break;
-		}
+		this.sip.setWidth(size.getWidth());
+		this.sip.setHeight(size.getHeight());
 		this.needsRedraw = true;
 	}
 	
 	public void setPosition(SignaturePosition position) {
 		this.signaturePosition = position;
-		switch (position) {
-			case TOP_LEFT:
-				this.sip.setAlignmentVertical(VisualSignatureAlignmentVertical.TOP);
-				this.sip.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.LEFT);
-			break;
-			case TOP_CENTER:
-				this.sip.setAlignmentVertical(VisualSignatureAlignmentVertical.TOP);
-				this.sip.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.CENTER);
-			break;
-			case TOP_RIGHT:
-				this.sip.setAlignmentVertical(VisualSignatureAlignmentVertical.TOP);
-				this.sip.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.RIGHT);
-			break;
-		}
+		this.sip.setAlignmentVertical(position.getVerticalAlignment());
+		this.sip.setAlignmentHorizontal(position.getHorizontalAlignment());
 	}
 	public SignaturePosition getSignaturePosition() {
 		return this.signaturePosition;
@@ -138,4 +122,25 @@ public abstract class SignatureAspect {
 		return this.isVisibleSerialNumber;
 	}
 	
+	public String getDateTime(int splits) {
+		Calendar localTime = Calendar.getInstance();
+		OffsetDateTime utcTime = OffsetDateTime.now(ZoneOffset.UTC);
+		Date now = localTime.getTime();
+		int diff = utcTime.getHour() - localTime.get(Calendar.HOUR_OF_DAY);
+		String sign = diff < 0 ? "+" : ""; // are deja minus
+		
+		String result = "";
+		switch (splits) {
+		case 1: // e suficient loc sa o pun pe un singur rand
+			result = "Date: " + new SimpleDateFormat("yyyy-MM-dd HH:mm").format(localTime.getTime()) + " UTC" + sign + String.valueOf(diff);
+			break;
+		case 2: // merge impartita in doua
+		case 3:
+			result = "Date: " + new SimpleDateFormat("yyyy-MM-dd").format(now) + "\n" + new SimpleDateFormat("HH:mm").format(now) + " UTC" + sign + String.valueOf(diff);
+			break;
+		default:
+			result = "Date: \n" + new SimpleDateFormat("yyyy-MM-dd").format(now) + "\n" + new SimpleDateFormat("HH:mm").format(now) + " UTC" + sign + String.valueOf(diff);
+		}
+		return result;
+	}
 }

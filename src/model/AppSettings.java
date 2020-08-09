@@ -9,6 +9,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import model.signing.visible.SignaturePosition;
 import model.signing.visible.SignatureSize;
@@ -181,5 +182,7 @@ public class AppSettings {
         } catch(Exception e) {x = 0;}
         System.out.println(x);
         System.out.println(SigningPage.valueOf("foo"));
+        MutableBoolean b = new MutableBoolean(true);
+        b.setValue(false);
 	}
 }

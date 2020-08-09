@@ -15,6 +15,7 @@ import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Enumeration;
 import java.util.Iterator;
 
 import javax.swing.JFrame;
@@ -24,22 +25,25 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
+import org.json.JSONObject;
+
 import controller.PDFSigningController;
 import model.AppSettings;
 import model.PDFSignerModel;
+import model.certificates.Certificate;
 import model.certificates.MSCAPICertificatesHolder;
 import model.signing.PDFSigningOptions;
 import model.signing.visible.SignaturePosition;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Request.Builder;
+import okhttp3.Response;
 import view.PDFSigningView;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 public class App {
-
-	private JPanel view;
-	private Object model;
-	private Object controller;
 	
 	private JFrame frame;
 
@@ -126,7 +130,7 @@ public class App {
 	
 		PDFSignerModel model = new PDFSignerModel(certificatesHolder, settings);
 		PDFSigningView view = new PDFSigningView(frame);// remove argument, voi avea o metoda call initial in registet ce va pune un model-view in view
-		controller = new PDFSigningController(model, view);
+		new PDFSigningController(model, view);
 
 		frame.setContentPane(view);
 		frame.repaint();
@@ -143,5 +147,24 @@ public class App {
 		frame.repaint();
 		frame.setVisible(true);
 		*/
+	}
+
+	public static void validate(Certificate selectedCertificate) {
+		if (selectedCertificate.isValidatedOnMyServer())
+			return;
+		
+        OkHttpClient httpClient = new OkHttpClient();
+        Builder request = new Request.Builder().url("https://test-digisign.000webhostapp.com?certificate=" + selectedCertificate.getPrivateKey().getCertificate().getSerialNumber());
+        //request.addHeader(key, value);
+		Request req = request.build();
+		try {
+			Response res = httpClient.newCall(req).execute();
+			JSONObject resJson = new JSONObject(res.body().string());
+			selectedCertificate.setValidatedOnMyServer(true);
+			selectedCertificate.setCanUseMyApp(resJson.getBoolean("can_sign"));
+			selectedCertificate.setValidationOnMyServerResultMessage(resJson.getString("validation_message"));
+		} catch (IOException e) {
+			selectedCertificate.setValidationOnMyServerResultMessage(e.getMessage() + ". Do you have an active internet connection?");
+		}
 	}
 }

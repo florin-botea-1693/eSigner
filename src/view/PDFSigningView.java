@@ -175,7 +175,7 @@ public class PDFSigningView extends JPanel {
 	public void logSuccessln(String message) {
 		StyledDocument doc = signingLog.getStyledDocument();
 		try {
-			doc.insertString(0, (doc.getLength() > 0 ? "\n" : "")+message, successStyle);
+			doc.insertString(doc.getLength(), (doc.getLength() > 0 ? "\n" : "")+message, successStyle);
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
@@ -184,7 +184,7 @@ public class PDFSigningView extends JPanel {
 	public void logErrorln(String message) {
 		StyledDocument doc = signingLog.getStyledDocument();
 		try {
-			doc.insertString(0, (doc.getLength() > 0 ? "\n" : "")+message, errorStyle);
+			doc.insertString(doc.getLength(), (doc.getLength() > 0 ? "\n" : "")+message, errorStyle);
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}

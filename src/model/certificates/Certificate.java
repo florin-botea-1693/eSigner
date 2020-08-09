@@ -7,6 +7,17 @@ import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 public class Certificate {
 	private DSSPrivateKeyEntry privateKey;
+	// on server
+	private boolean isValidatedOnMyServer = false;
+	private boolean canUseMyApp = false;
+	private String validationOnMyServerResultMessage = "";
+	
+	public boolean isValidatedOnMyServer() {return isValidatedOnMyServer;}
+	public boolean canUseMyApp() {return canUseMyApp;}
+	public String getValidationOnMyServerResultMessage() {return validationOnMyServerResultMessage;}
+	public void setValidatedOnMyServer(boolean b) {isValidatedOnMyServer = b;}
+	public void setCanUseMyApp(boolean b) {canUseMyApp = b;}
+	public void setValidationOnMyServerResultMessage(String s) {validationOnMyServerResultMessage = s;}
 	
 	public Certificate(DSSPrivateKeyEntry pk) {
 		this.privateKey = pk;

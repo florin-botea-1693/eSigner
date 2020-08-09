@@ -3,6 +3,9 @@ package model.signing.visible;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -120,19 +123,18 @@ public class AdobeLikeSignatureAspect extends SignatureAspect {
 		tp.setSize(rightFontSize);
 		BufferedImage right = ImageTextWriter.createTextImage(new SignatureImageParameters(), tp, formattedRightText);
 		BufferedImage img = ImageMerger.mergeOnRight(left, right, new Color ( 0f, 0f, 0f, .1f ), SignerTextVerticalAlignment.MIDDLE);
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
-			ImageIO.write(img, "gif", new File("signatureImg.gif"));
-		} catch (IOException e) {
-			e.printStackTrace();
+			ImageIO.write(img, "gif", baos);
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
 		
-		try {
-			InMemoryDocument image = new InMemoryDocument(new FileInputStream("signatureImg.gif"));
-			this._getSIP().setImage(image);
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		byte[] bytes = baos.toByteArray();
+
+		InMemoryDocument image = new InMemoryDocument(new ByteArrayInputStream(bytes));
+		this._getSIP().setImage(image);
 	}
 
 	@Override

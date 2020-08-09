@@ -47,6 +47,7 @@ public abstract class SignatureAspect {
 		if (needsRedraw) {
 			System.out.println("Constructing signature aspect");
 			reDraw();
+			needsRedraw = false;
 		} else {
 			System.out.println("Refreshing signature aspect");
 			refresh();
@@ -126,8 +127,8 @@ public abstract class SignatureAspect {
 		Calendar localTime = Calendar.getInstance();
 		OffsetDateTime utcTime = OffsetDateTime.now(ZoneOffset.UTC);
 		Date now = localTime.getTime();
-		int diff = utcTime.getHour() - localTime.get(Calendar.HOUR_OF_DAY);
-		String sign = diff < 0 ? "+" : ""; // are deja minus
+		int diff = localTime.get(Calendar.HOUR_OF_DAY) + utcTime.getHour();
+		String sign = diff > 0 ? "+" : ""; // are deja minus
 		
 		String result = "";
 		switch (splits) {

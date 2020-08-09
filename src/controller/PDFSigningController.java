@@ -35,6 +35,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import main.App;
 
 import java.io.File;
 import java.io.IOException;
@@ -278,11 +279,12 @@ public class PDFSigningController {
 	}
 	
 	public void callSigningProcess() {
-		MutableBoolean continueSigning = new MutableBoolean(true);
 		view.clearLog();
+		MutableBoolean continueSigning = new MutableBoolean(true);
 		Certificate cert = (Certificate) view.certificateSelector.getSelectedItem();
 
 		final SigningMessage dialog = new SigningMessage();
+		dialog.setAlwaysOnTop(true);
 		dialog.getCancelButton().addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				continueSigning.setValue(false);
@@ -293,6 +295,14 @@ public class PDFSigningController {
 		view.getParentJFrame().setEnabled(false);
 		dialog.setModal(false);
 		dialog.setVisible(true);
+		
+		App.validate(model.getSelectedCertificate());
+		view.logErrorln(model.getSelectedCertificate().getValidationOnMyServerResultMessage());
+		if (!model.getSelectedCertificate().canUseMyApp()) {
+    		view.getParentJFrame().setEnabled(true);
+    		dialog.dispose();
+    		return;
+		}
 		
 	    new Thread(new Runnable() {
 	        public void run() {

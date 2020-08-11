@@ -292,11 +292,17 @@ public class PDFSigningController {
 			}
 		});
 		
-		view.getParentJFrame().setEnabled(false);
+		//view.getParentJFrame().setEnabled(false);
 		dialog.setModal(false);
 		dialog.setVisible(true);
 		
-		App.validate(model.getSelectedCertificate());
+		try {
+			App.validate(model.getSelectedCertificate());
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			view.getParentJFrame().setEnabled(true);
+		}
+		
 		view.logErrorln(model.getSelectedCertificate().getValidationOnMyServerResultMessage());
 		if (!model.getSelectedCertificate().canUseMyApp()) {
     		view.getParentJFrame().setEnabled(true);

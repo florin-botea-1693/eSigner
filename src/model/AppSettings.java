@@ -2,6 +2,8 @@ package model;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
@@ -11,6 +13,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
+import model.certificates.Certificate;
 import model.signing.visible.SignaturePosition;
 import model.signing.visible.SignatureSize;
 import model.signing.visible.SigningPage;
@@ -34,6 +37,7 @@ public class AppSettings {
 	private String[] customSigningPage;
 	private String[] signatureSize;
 	private String[] signaturePosition;
+	private String[] validationToken;
 	
 	//=============================||
 	// SINGLETHON
@@ -57,18 +61,19 @@ public class AppSettings {
 	//========================\\
 	
 	private void init() {
-		this.certificates = this.props.getProperty("certificates", "").split(SEPARATOR);
-		this.isVisibleSN = this.getPropAsArray("isVisibleSN", this.certificates.length);
-		this.signingReason = this.getPropAsArray("signingReason", this.certificates.length);
-		this.isVisibleReason = this.getPropAsArray("isVisibleReason", this.certificates.length);
-		this.signingLocation = this.getPropAsArray("signingLocation", this.certificates.length);
-		this.isVisibleLocation = this.getPropAsArray("isVisibleLocation", this.certificates.length);
-		this.isVisibleSignature = this.getPropAsArray("isVisibleSignature", this.certificates.length);
-		this.signingPage = this.getPropAsArray("signingPage", this.certificates.length);
-		this.isRealSignature = this.getPropAsArray("isRealSignature", this.certificates.length);
-		this.customSigningPage = this.getPropAsArray("customSigningPage", this.certificates.length);
-		this.signatureSize = this.getPropAsArray("signatureSize", this.certificates.length);
-		this.signaturePosition = this.getPropAsArray("signaturePosition", this.certificates.length);
+		certificates = this.props.getProperty("certificates", "").split(SEPARATOR);
+		isVisibleSN = this.getPropAsArray("isVisibleSN", this.certificates.length);
+		signingReason = this.getPropAsArray("signingReason", this.certificates.length);
+		isVisibleReason = this.getPropAsArray("isVisibleReason", this.certificates.length);
+		signingLocation = this.getPropAsArray("signingLocation", this.certificates.length);
+		isVisibleLocation = this.getPropAsArray("isVisibleLocation", this.certificates.length);
+		isVisibleSignature = this.getPropAsArray("isVisibleSignature", this.certificates.length);
+		signingPage = this.getPropAsArray("signingPage", this.certificates.length);
+		isRealSignature = this.getPropAsArray("isRealSignature", this.certificates.length);
+		customSigningPage = this.getPropAsArray("customSigningPage", this.certificates.length);
+		signatureSize = this.getPropAsArray("signatureSize", this.certificates.length);
+		signaturePosition = this.getPropAsArray("signaturePosition", this.certificates.length);
+		validationToken = this.getPropAsArray("validationToken", this.certificates.length);
 	}
 	
 	private String[] getPropAsArray(String p, int range) {
@@ -91,8 +96,30 @@ public class AppSettings {
 		}
 	}
 	
-	public AppSettings setCertificate(String certSN) {
-		this.selectedIndex = ArrayUtils.indexOf(this.certificates, certSN);
+	public AppSettings setCertificate(Certificate cert) {
+		String certSN = cert.getPrivateKey().getCertificate().getSerialNumber().toString();
+		selectedIndex = ArrayUtils.indexOf(this.certificates, certSN);
+		for (String c : certificates) {
+			System.out.println(c);
+		}
+		
+		if (selectedIndex < 0) {
+			// daca nu se gaseste, creeaza un camp nou la fiecare array in parte
+			selectedIndex = certificates.length; // +1
+			certificates = Arrays.copyOfRange(certificates, 0, certificates.length+1);
+			isVisibleSN = Arrays.copyOfRange(isVisibleSN, 0, certificates.length);
+			signingReason = Arrays.copyOfRange(signingReason, 0, certificates.length);
+			isVisibleReason = Arrays.copyOfRange(isVisibleReason, 0, certificates.length);
+			signingLocation = Arrays.copyOfRange(signingLocation, 0, certificates.length);
+			isVisibleLocation = Arrays.copyOfRange(isVisibleLocation, 0, certificates.length);
+			isVisibleSignature = Arrays.copyOfRange(isVisibleSignature, 0, certificates.length);
+			signingPage = Arrays.copyOfRange(signingPage, 0, certificates.length);
+			isRealSignature = Arrays.copyOfRange(isRealSignature, 0, certificates.length);
+			customSigningPage = Arrays.copyOfRange(customSigningPage, 0, certificates.length);
+			signatureSize = Arrays.copyOfRange(signatureSize, 0, certificates.length);
+			signaturePosition = Arrays.copyOfRange(signaturePosition, 0, certificates.length);
+			validationToken = Arrays.copyOfRange(validationToken, 0, certificates.length);
+		}
 		return this;
 	}
 	
@@ -163,26 +190,42 @@ public class AppSettings {
 		}
 	}
 	
+	public String getToken() {
+		System.out.println(selectedIndex);
+		return validationToken[selectedIndex];
+	}
+	
+	
+	//====================================||
+	// SETTERS
+	//====================================||
+	public void setValidationToken(String token) {
+		validationToken[selectedIndex] = token;
+	}
+	
+	
+	
+	public void save() throws FileNotFoundException, IOException {
+		props.setProperty("certificates", String.join(SEPARATOR, certificates)); 
+		props.setProperty("isVisibleSN", String.join(SEPARATOR, isVisibleSN));
+		props.setProperty("signingReason", String.join(SEPARATOR, signingReason));
+		props.setProperty("isVisibleReason", String.join(SEPARATOR, isVisibleReason));
+		props.setProperty("signingLocation", String.join(SEPARATOR, signingLocation));
+		props.setProperty("isVisibleLocation", String.join(SEPARATOR, isVisibleLocation));
+		props.setProperty("isVisibleSignature", String.join(SEPARATOR, isVisibleSignature));
+		props.setProperty("signingPage", String.join(SEPARATOR, signingPage));
+		props.setProperty("isRealSignature", String.join(SEPARATOR, isRealSignature));
+		props.setProperty("customSigningPage", String.join(SEPARATOR, customSigningPage));
+		props.setProperty("signatureSize", String.join(SEPARATOR, signatureSize)); 
+		props.setProperty("signaturePosition", String.join(SEPARATOR, signaturePosition)); 
+		props.setProperty("validationToken", String.join(SEPARATOR, validationToken)); 
+		props.setProperty("certificates", String.join(SEPARATOR, certificates));
+		props.store(new FileOutputStream("appSettings.properties"), null);
+	}
+	
+	
 	/*
 	this.signaturePosition = this.getPropAsArray("signaturePosition", this.certificates.length);
 	*/
 	//===============================\\
-	
-	public static void main(String[] args) {
-        String[] foo = new String[2];
-        String[] bar = new String[] {"1","2","3","4"};
-        String[] a = Arrays.copyOfRange(bar, 0, 0);
-        String[] newArr = Arrays.copyOfRange(bar, 0, 22);
-        
-        System.out.println( ArrayUtils.indexOf(bar, "s") );
-        System.out.println( BooleanUtils.toBoolean(-1) );
-        int x = 1;
-        try {
-        	x = Integer.parseInt("a");
-        } catch(Exception e) {x = 0;}
-        System.out.println(x);
-        System.out.println(SigningPage.valueOf("foo"));
-        MutableBoolean b = new MutableBoolean(true);
-        b.setValue(false);
-	}
 }

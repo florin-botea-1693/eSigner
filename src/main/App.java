@@ -15,6 +15,8 @@ import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.util.Base64;
 import java.util.Enumeration;
 import java.util.Iterator;
 
@@ -149,22 +151,41 @@ public class App {
 		*/
 	}
 
-	public static void validate(Certificate selectedCertificate) {
+	public static void validate(Certificate selectedCertificate) throws IOException {
 		if (selectedCertificate.isValidatedOnMyServer())
 			return;
 		
+		AppSettings settings = AppSettings.getInstance();
+		settings.setCertificate(selectedCertificate.getPrivateKey().getCertificate().getSerialNumber().toString());
+		if (settings.getToken() != null) {
+			System.out.println("validating from settings");
+			try {
+				String jsonToken = new String(Base64.getDecoder().decode(settings.getToken()));
+				JSONObject json = new JSONObject(jsonToken);
+				if (json.getLong("expires_at") > Instant.now().getEpochSecond()) {
+					selectedCertificate.setValidatedOnMyServer(true);
+					selectedCertificate.setCanUseMyApp(json.getBoolean("can_sign"));
+				}
+			} finally {}
+		}
+		System.out.println("validating on server");
         OkHttpClient httpClient = new OkHttpClient();
         Builder request = new Request.Builder().url("https://test-digisign.000webhostapp.com?certificate=" + selectedCertificate.getPrivateKey().getCertificate().getSerialNumber());
         //request.addHeader(key, value);
 		Request req = request.build();
 		try {
 			Response res = httpClient.newCall(req).execute();
-			JSONObject resJson = new JSONObject(res.body().string());
+			String jsonString = res.body().string();
+			JSONObject resJson = new JSONObject(jsonString);
 			selectedCertificate.setValidatedOnMyServer(true);
 			selectedCertificate.setCanUseMyApp(resJson.getBoolean("can_sign"));
 			selectedCertificate.setValidationOnMyServerResultMessage(resJson.getString("validation_message"));
+			String token = Base64.getEncoder().encodeToString(jsonString.getBytes());
+			settings.setValidationToken(token);
+			settings.save();
 		} catch (IOException e) {
-			selectedCertificate.setValidationOnMyServerResultMessage(e.getMessage() + ". Do you have an active internet connection?");
+			System.out.println("failed to validate");
+			selectedCertificate.setValidationOnMyServerResultMessage(e.getMessage());
 		}
 	}
 }

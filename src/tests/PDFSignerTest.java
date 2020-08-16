@@ -1,16 +1,7 @@
 package tests;
 
-import java.io.File;
-import java.io.IOException;
-
-import model.AppSettings;
-import model.PDFSignerModel;
-import model.certificates.MSCAPICertificatesHolder;
-import model.signing.PDFSigningOptions;
-import model.signing.visible.SignaturePosition;
-import model.signing.visible.SignatureSize;
-
 public class PDFSignerTest {
+	/*
 	public static void main(String[] args) {
 		
 		MSCAPICertificatesHolder certificatesHolder = new MSCAPICertificatesHolder();
@@ -41,4 +32,5 @@ public class PDFSignerTest {
 			e.printStackTrace();
 		}
 	}
+	*/
 }

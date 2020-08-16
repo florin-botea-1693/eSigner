@@ -1,49 +1,25 @@
 package main;
 
-import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.time.Instant;
-import java.util.Base64;
-import java.util.Enumeration;
-import java.util.Iterator;
 
 import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JRootPane;
-import javax.swing.SwingUtilities;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import org.json.JSONObject;
-
 import controller.PDFSigningController;
-import model.AppSettings;
 import model.PDFSignerModel;
-import model.certificates.Certificate;
 import model.certificates.MSCAPICertificatesHolder;
-import model.signing.PDFSigningOptions;
-import model.signing.visible.SignaturePosition;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Request.Builder;
-import okhttp3.Response;
 import view.PDFSigningView;
-import javax.swing.JMenuBar;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 
 public class App {
 	
@@ -128,9 +104,8 @@ public class App {
 	*/
 	public void goToPDFSign() throws IOException {
 		MSCAPICertificatesHolder certificatesHolder = new MSCAPICertificatesHolder();
-		AppSettings settings = AppSettings.getInstance();
 	
-		PDFSignerModel model = new PDFSignerModel(certificatesHolder, settings);
+		PDFSignerModel model = new PDFSignerModel(certificatesHolder);
 		PDFSigningView view = new PDFSigningView(frame);// remove argument, voi avea o metoda call initial in registet ce va pune un model-view in view
 		new PDFSigningController(model, view);
 
@@ -149,43 +124,5 @@ public class App {
 		frame.repaint();
 		frame.setVisible(true);
 		*/
-	}
-
-	public static void validate(Certificate selectedCertificate) throws IOException {
-		if (selectedCertificate.isValidatedOnMyServer())
-			return;
-		
-		AppSettings settings = AppSettings.getInstance();
-		settings.setCertificate(selectedCertificate.getPrivateKey().getCertificate().getSerialNumber().toString());
-		if (settings.getToken() != null) {
-			System.out.println("validating from settings");
-			try {
-				String jsonToken = new String(Base64.getDecoder().decode(settings.getToken()));
-				JSONObject json = new JSONObject(jsonToken);
-				if (json.getLong("expires_at") > Instant.now().getEpochSecond()) {
-					selectedCertificate.setValidatedOnMyServer(true);
-					selectedCertificate.setCanUseMyApp(json.getBoolean("can_sign"));
-				}
-			} finally {}
-		}
-		System.out.println("validating on server");
-        OkHttpClient httpClient = new OkHttpClient();
-        Builder request = new Request.Builder().url("https://test-digisign.000webhostapp.com?certificate=" + selectedCertificate.getPrivateKey().getCertificate().getSerialNumber());
-        //request.addHeader(key, value);
-		Request req = request.build();
-		try {
-			Response res = httpClient.newCall(req).execute();
-			String jsonString = res.body().string();
-			JSONObject resJson = new JSONObject(jsonString);
-			selectedCertificate.setValidatedOnMyServer(true);
-			selectedCertificate.setCanUseMyApp(resJson.getBoolean("can_sign"));
-			selectedCertificate.setValidationOnMyServerResultMessage(resJson.getString("validation_message"));
-			String token = Base64.getEncoder().encodeToString(jsonString.getBytes());
-			settings.setValidationToken(token);
-			settings.save();
-		} catch (IOException e) {
-			System.out.println("failed to validate");
-			selectedCertificate.setValidationOnMyServerResultMessage(e.getMessage());
-		}
 	}
 }

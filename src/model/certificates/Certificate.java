@@ -1,23 +1,23 @@
 package model.certificates;
 
 import java.security.Principal;
+import java.security.cert.CertificateParsingException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 public class Certificate {
 	private DSSPrivateKeyEntry privateKey;
-	// on server
-	private boolean isValidatedOnMyServer = false;
-	private boolean canUseMyApp = false;
-	private String validationOnMyServerResultMessage = "";
 	
-	public boolean isValidatedOnMyServer() {return isValidatedOnMyServer;}
-	public boolean canUseMyApp() {return canUseMyApp;}
-	public String getValidationOnMyServerResultMessage() {return validationOnMyServerResultMessage;}
-	public void setValidatedOnMyServer(boolean b) {isValidatedOnMyServer = b;}
-	public void setCanUseMyApp(boolean b) {canUseMyApp = b;}
-	public void setValidationOnMyServerResultMessage(String s) {validationOnMyServerResultMessage = s;}
+	// certificate's info
+	String issuedTo = null;
+	String issuedBy = null;
+	String email = null;
 	
 	public Certificate(DSSPrivateKeyEntry pk) {
 		this.privateKey = pk;
@@ -25,12 +25,12 @@ public class Certificate {
 	
 	@Override
 	public String toString() {
-    	String userName = this.getHolderNameName();
+    	String userName = this.getIssuedTo();
     	String sn = this.privateKey.getCertificate().getCertificate().getSerialNumber().toString(16);
     	SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
     	String expirationDate = dateFormat.format(this.privateKey.getCertificate().getCertificate().getNotAfter());
     	
-		return userName + expirationDate;
+		return userName + " " + getEmailAdress() + " " + expirationDate;
 	}
 	
 	public DSSPrivateKeyEntry getPrivateKey() {
@@ -41,21 +41,52 @@ public class Certificate {
 		return privateKey.getCertificate().getCertificate().getSubjectDN();
 	}
 	
-	public String getHolderNameName() {
-		Principal principal = getPrincipal();
-		int start = principal.getName().indexOf("CN");
-		String tmpName, name = "";
-		if (start > 0) { 
-			tmpName = principal.getName().substring(start+3);
-			int end = tmpName.indexOf(",");
-			if (end > 0) {
-				name = tmpName.substring(0, end);
-			}
-			else {
-				name = tmpName; 
-			}
+	public String getIssuedTo() {
+		if (issuedTo != null)
+			return issuedTo;
+		issuedTo = "Certificate";
+		String n = getPrivateKey().getCertificate().getSubjectX500Principal().getName();
+		Pattern r = Pattern.compile("CN=([\\w- ]*)");
+		Matcher m = r.matcher(n);
+		if (m.find()) {
+			issuedTo = m.group(1);
 		}
-		return name;
+		return issuedTo;
+	}
+	
+	public String getEmailAdress() {
+		if (email != null)
+			return email;
+		email = "";
+		try {
+			Collection<List<?>> an = getPrivateKey().getCertificate().getCertificate().getSubjectAlternativeNames();
+			if (an != null) {
+				Iterator<List<?>> foo = an.iterator();
+				foo.forEachRemaining( x -> {
+					x.forEach(el -> {
+						if (el.toString().contains("@") && el instanceof String) {
+							email = el.toString();
+						}
+					});
+				});
+			}
+		} catch (CertificateParsingException e) {
+			e.printStackTrace();
+		}
+		return email;
+	}
+	
+	public String getIssuedBy() {
+		if (issuedBy != null)
+			return issuedBy;
+		issuedTo = "User";
+		String n = getPrivateKey().getCertificate().getIssuerX500Principal().getName();
+		Pattern r = Pattern.compile("CN=([\\w- ]*)");
+		Matcher m = r.matcher(n);
+		if (m.find()) {
+			issuedBy = m.group(1);
+		}
+		return issuedBy;
 	}
 
 	public String getSerialNumber() {

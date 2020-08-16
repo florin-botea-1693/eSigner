@@ -1,6 +1,5 @@
 package controller;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -9,8 +8,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import model.PDFSignerModel;
+import model.certificates.AppCertificatesValidator;
 import model.certificates.Certificate;
-import model.signing.PDFSigningOptions;
+import model.certificates.ValidationResult;
 import model.signing.visible.SignaturePosition;
 import model.signing.visible.SignatureSize;
 import model.signing.visible.SigningPage;
@@ -19,26 +19,13 @@ import view.SigningMessage;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRootPane;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.apache.commons.lang3.mutable.MutableInt;
-
-import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import main.App;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList; 
 
 public class PDFSigningController {
@@ -125,6 +112,21 @@ public class PDFSigningController {
 			@Override
 			public void changedUpdate(DocumentEvent e) {
 				model.ignoreNextEvent().setSigningReason(view.signingReason.getText());
+			}
+		});
+		
+		view.organization.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				model.ignoreNextEvent().setSigningOrganization(view.organization.getText());
+			}
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				model.ignoreNextEvent().setSigningOrganization(view.organization.getText());
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				model.ignoreNextEvent().setSigningOrganization(view.organization.getText());
 			}
 		});
 
@@ -280,9 +282,26 @@ public class PDFSigningController {
 	
 	public void callSigningProcess() {
 		view.clearLog();
-		MutableBoolean continueSigning = new MutableBoolean(true);
+		MutableBoolean continueSigning = new MutableBoolean(false);
 		Certificate cert = (Certificate) view.certificateSelector.getSelectedItem();
-
+		
+		view.getParentJFrame().setEnabled(false);
+		try {
+			AppCertificatesValidator validator = AppCertificatesValidator.getInstance();
+			ValidationResult vr = validator.validate(cert);
+			continueSigning.setValue(vr.canSign);
+			System.out.println("can sign" + vr.canSign);
+			view.logErrorln(vr.message);
+		} catch (Exception e1) {
+			view.logErrorln(e1.getMessage());
+			view.getParentJFrame().setEnabled(true);
+		}
+		
+		if (continueSigning.getValue() == false) {
+			view.getParentJFrame().setEnabled(true);
+			return;
+		}
+			
 		final SigningMessage dialog = new SigningMessage();
 		dialog.setAlwaysOnTop(true);
 		dialog.getCancelButton().addActionListener(new ActionListener() {
@@ -292,23 +311,8 @@ public class PDFSigningController {
 			}
 		});
 		
-		//view.getParentJFrame().setEnabled(false);
 		dialog.setModal(false);
 		dialog.setVisible(true);
-		
-		try {
-			App.validate(model.getSelectedCertificate());
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			view.getParentJFrame().setEnabled(true);
-		}
-		
-		view.logErrorln(model.getSelectedCertificate().getValidationOnMyServerResultMessage());
-		if (!model.getSelectedCertificate().canUseMyApp()) {
-    		view.getParentJFrame().setEnabled(true);
-    		dialog.dispose();
-    		return;
-		}
 		
 	    new Thread(new Runnable() {
 	        public void run() {

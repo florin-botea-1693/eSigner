@@ -6,8 +6,6 @@ import java.util.ArrayList;
 
 import javax.swing.JLabel;
 
-import org.apache.commons.lang3.StringEscapeUtils;
-
 public class FitTextInRectangle {
 	
 	private JLabel jLabel;

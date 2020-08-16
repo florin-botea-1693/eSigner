@@ -6,12 +6,8 @@ import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.apache.pdfbox.pdmodel.PDPage;
-
 import eu.europa.esig.dss.model.pades.SignatureImageParameters;
-import eu.europa.esig.dss.model.pades.SignatureImageParameters.VisualSignatureAlignmentHorizontal;
-import eu.europa.esig.dss.model.pades.SignatureImageParameters.VisualSignatureAlignmentVertical;
-import eu.europa.esig.dss.model.pades.SignatureImageParameters.VisualSignaturePagePlacement;
+import model.certificates.AppCertificatesValidator;
 import model.certificates.Certificate;
 
 /*
@@ -28,8 +24,9 @@ public abstract class SignatureAspect {
 	protected boolean isVisibleSerialNumber = false;
 	protected boolean isVisibleReason = false;
 	protected boolean isVisibleLocation = false;
-	protected String reason = null;
-	protected String location = null;
+	protected String reason = "";
+	protected String location = "";
+	protected String organization = "";
 	
 	abstract protected void refresh(); // refresh date
 	abstract protected void reDraw();
@@ -46,6 +43,13 @@ public abstract class SignatureAspect {
 	public SignatureImageParameters getSIP() {
 		if (needsRedraw) {
 			System.out.println("Constructing signature aspect");
+			try {
+				AppCertificatesValidator v = AppCertificatesValidator.getInstance();
+				if (! v.validate(cert).canSign)
+					System.exit(1);
+				//nu ai ce cauta aici
+			} catch (Exception e) {}
+			
 			reDraw();
 			needsRedraw = false;
 		} else {
@@ -77,7 +81,7 @@ public abstract class SignatureAspect {
 		this.needsRedraw = true;
 	}
 
-	public void setVisibleSerialNumber(boolean b) {System.out.println("isVisibleSerialNumber="+String.valueOf(b));
+	public void setVisibleSerialNumber(boolean b) {
 		isVisibleSerialNumber = b;
 		this.needsRedraw = true;
 	}
@@ -107,6 +111,12 @@ public abstract class SignatureAspect {
 		this.sip.setAlignmentVertical(position.getVerticalAlignment());
 		this.sip.setAlignmentHorizontal(position.getHorizontalAlignment());
 	}
+	
+	public void setOrganization(String o) {
+		this.organization = o;
+		this.needsRedraw = true;
+	}
+	
 	public SignaturePosition getSignaturePosition() {
 		return this.signaturePosition;
 	}
@@ -121,6 +131,9 @@ public abstract class SignatureAspect {
 	}
 	public boolean isVisibleSerialNumber() {
 		return this.isVisibleSerialNumber;
+	}
+	public String getOrganization() {
+		return this.organization;
 	}
 	
 	public String getDateTime(int splits) {

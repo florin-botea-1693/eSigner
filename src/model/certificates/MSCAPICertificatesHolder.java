@@ -16,11 +16,11 @@ public class MSCAPICertificatesHolder implements CertificatesHolder {
 	public MSCAPICertificatesHolder() {
         for (DSSPrivateKeyEntry entry : this.token.getKeys()) {
         	if (entry.getCertificate().getCertificate().getType() != "X.509") {
-        		//continue;
+        		continue;
         	}
             boolean[] usage = entry.getCertificate().getCertificate().getKeyUsage();
             if (usage == null || usage[0] == false) {//usage0 == signing
-            	//continue;
+            	continue;
             }
         	certificates.add(new Certificate(entry));
         }
@@ -38,7 +38,8 @@ public class MSCAPICertificatesHolder implements CertificatesHolder {
 
 	@Override
 	public Certificate getSelectedCertificate() {
-		if (getCertificates().get(0) == null) throw new NullPointerException("No certificate in keystore");
+		if (getCertificates().size() == 0)
+			return null;
 		if (selectedCertificate == null) {
 			selectedCertificate = getCertificates().get(0);
 		}

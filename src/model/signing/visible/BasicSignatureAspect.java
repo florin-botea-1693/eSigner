@@ -40,7 +40,7 @@ public class BasicSignatureAspect extends SignatureAspect {
 	
 	public String getText() {
 		String text = "";
-		text += ("Digitally signed by " + cert.getHolderNameName()) + "\n";
+		text += ("Digitally signed by " + cert.getIssuedTo()) + "\n";
 		text += isVisibleSerialNumber ? ("SN: " + cert.getSerialNumber() + "\n") : "";
 		text += this.isVisibleReason ? ("Reason: " + reason + "\n") : "";
 		text += this.isVisibleLocation ? ("Location: " + location + "\n") : "";

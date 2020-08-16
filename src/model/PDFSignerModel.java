@@ -1,50 +1,20 @@
 package model;
 
-import java.awt.Color;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.security.KeyStore;
-import java.security.KeyStore.PasswordProtection;
 import java.util.List;
 
-import javax.imageio.ImageIO;
-
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
-import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.model.FileDocument;
-import eu.europa.esig.dss.model.InMemoryDocument;
-import eu.europa.esig.dss.model.SignatureValue;
-import eu.europa.esig.dss.model.ToBeSigned;
-import eu.europa.esig.dss.model.pades.DSSJavaFont;
-import eu.europa.esig.dss.model.pades.SignatureImageParameters;
-import eu.europa.esig.dss.model.pades.SignatureImageTextParameters;
-import eu.europa.esig.dss.model.pades.SignatureImageTextParameters.SignerTextHorizontalAlignment;
-import eu.europa.esig.dss.model.pades.SignatureImageTextParameters.SignerTextPosition;
-import eu.europa.esig.dss.model.pades.SignatureImageTextParameters.SignerTextVerticalAlignment;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.pdf.pdfbox.PdfBoxNativeObjectFactory;
-import eu.europa.esig.dss.pdf.pdfbox.visible.defaultdrawer.ImageTextWriter;
-import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import eu.europa.esig.dss.token.Pkcs12SignatureToken;
-import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import model.certificates.Certificate;
 import model.certificates.CertificatesHolder;
 import model.signing.PDFInvisibleSigning;
-import model.signing.PDFSigningOptions;
 import model.signing.PDFVisibleAllPagesRealSigning;
 import model.signing.PDFVisibleAllPagesSigning;
 import model.signing.PDFVisibleSigning;
@@ -67,7 +37,6 @@ public final class PDFSignerModel {
 	private PropertyChangeSupportExtended observed;
 	
 	private CertificatesHolder certificatesHolder;
-	private AppSettings settings;
 	private PAdESService service;
 	private PAdESSignatureParameters padesParameters = new PAdESSignatureParameters();
 	private SignatureAspect signatureAspect;
@@ -100,9 +69,8 @@ public final class PDFSignerModel {
 	//====================||
 	// >>> CONSTRUCTOR <<<
 	//====================||
-	public PDFSignerModel(CertificatesHolder certificatesHolder, AppSettings settings) {
+	public PDFSignerModel(CertificatesHolder certificatesHolder) {
 		this.observed = new PropertyChangeSupportExtended(this);
-		this.settings = settings;
 		this.certificatesHolder = certificatesHolder;
 		
 		this.signatureAspect = SignatureAspectDelegate.getAspect("BasicSignatureAspect");
@@ -111,7 +79,6 @@ public final class PDFSignerModel {
 		this.service = new PAdESService(commonCertificateVerifier);
 		this.service.setPdfObjFactory(new PdfBoxNativeObjectFactory());
 		this.padesParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
-		
 		loadFromSettings();
 	}
 	//===================\\
@@ -194,8 +161,8 @@ public final class PDFSignerModel {
 	public void setSigningCertificate(Certificate cert) {
 		observed.firePropertyChange("selectedCertificate", null, cert);
 		if (cert == null) return;
-		this.padesParameters.setSigningCertificate(cert.getPrivateKey().getCertificate());
-		this.padesParameters.setCertificateChain(cert.getPrivateKey().getCertificateChain());
+		padesParameters.setSigningCertificate(cert.getPrivateKey().getCertificate());
+		padesParameters.setCertificateChain(cert.getPrivateKey().getCertificateChain());
 		padesParameters.setSigningCertificate(cert.getPrivateKey().getCertificate());
 		padesParameters.setCertificateChain(cert.getPrivateKey().getCertificateChain());
 		certificatesHolder.selectCertificate(cert);
@@ -271,6 +238,11 @@ public final class PDFSignerModel {
 		signatureAspect.setVisibleLocation(b);
 		observed.firePropertyChange("isVisibleLocation", oldVal, b);
 	}
+	
+	public void setSigningOrganization(String text) {
+		signatureAspect.setOrganization(text);
+		observed.firePropertyChange("organization", null, text);
+	}
 	//==================================\\
 
 	//===============================================================||
@@ -278,33 +250,69 @@ public final class PDFSignerModel {
 	// now, we setup model from preferences
 	//===============================================================||
 	public void loadFromSettings() {
-		String certSN = this.settings.getPreferredCertificate();
-		this.loadFromSettings(certSN);
+		try {
+			SigningSettings settings = SigningSettings.getInstance();
+			SigningSettingsRecord s = settings.getSigningSettings();
+			setSigningOrganization(s.organization);
+			setSigningReason(s.signing_reason);
+			setVisibleReason(s.is_visible_reason);
+			setSigningLocation(s.signing_location);
+			setVisibleLocation(s.is_visible_location);
+			setVisibleSN(s.is_visible_sn);
+			setSignatureSize(s.signature_size);
+			setSignaturePosition(s.signature_position);
+			setSigningPage(s.signing_page);
+			setIsRealSignature(s.is_real_signature);
+			setSigningPage(s.custom_signing_page);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	/*
+	public void loadFromSettings() {
+		signatureAspect = SignatureAspectDelegate.getAspect("BasicSignatureAspect");
+		Certificate cert = certificatesHolder.getSelectedCertificate();
+		if (cert != null)
+			setSigningCertificate(cert);
 	}
 
+	
 	private void loadFromSettings(String certSN) {
-		settings.setCertificate(certSN);
 		// aici ar trebui sa setez si in certificateholder certificatul implicit
-		signatureAspect = SignatureAspectDelegate.getAspect("BasicSignatureAspect");
+		
 		// options get based on prefered certificate
 		// set with view listening
-		Certificate cert = certificatesHolder.findBySerialNumber(certSN);
-		setSigningCertificate(cert);
-		setSigningReason(settings.getSigningReason());
-		setVisibleReason(settings.isVisibleReason());
-		setSigningLocation(settings.getSigningLocation());
-		setVisibleLocation(settings.isVisibleLocation());
-		setVisibleSN(settings.isVisibleSerialNumber());
-		setSignatureSize(settings.getSignatureSize());
-		setSignaturePosition(settings.getSignaturePosition());
-		setSigningPage(settings.getSigningPage());
-		setIsRealSignature(settings.isRealSignature());
-		setSigningPage(settings.getCustomSigningPage());
 		
 		/* configure signature presentation data */
 
 		//certificatesHolder.selectCertificate(cert);
-		/* !!cel mai important!! nu pot construi grafica semnatura fara un certificat */
+		/* !!cel mai important!! nu pot construi grafica semnatura fara un certificat 
 		//signatureAspect.setCertificate(cert);
 	}
+	
+	private void loadFromSettings(Certificate cert) {
+		// poate si o validare aici
+		SigningSettingsRecord s = null;
+		try {
+			s = SigningSettings.getInstance().getCertificateSigningSettings(cert.getPrivateKey().getCertificate().getSerialNumber());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		if (s == null)
+			return;
+
+		setSigningReason(s.signing_reason);
+		setVisibleReason(s.is_visible_reason);
+		setSigningLocation(s.signing_location);
+		setVisibleLocation(s.is_visible_location);
+		setVisibleSN(s.is_visible_sn);
+		setSignatureSize(s.signature_size);
+		setSignaturePosition(s.signature_position);
+		setSigningPage(s.signing_page);
+		setIsRealSignature(s.is_real_signature);
+		setSigningPage(s.custom_signing_page);
+	}
+	*/
 }

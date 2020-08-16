@@ -3,18 +3,14 @@ package model.signing.visible;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
-
-import org.apache.pdfbox.pdmodel.PDPage;
 
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.model.pades.DSSJavaFont;
@@ -22,12 +18,9 @@ import eu.europa.esig.dss.model.pades.SignatureImageParameters;
 import eu.europa.esig.dss.model.pades.SignatureImageParameters.VisualSignatureAlignmentHorizontal;
 import eu.europa.esig.dss.model.pades.SignatureImageParameters.VisualSignatureAlignmentVertical;
 import eu.europa.esig.dss.model.pades.SignatureImageTextParameters;
-import eu.europa.esig.dss.model.pades.SignatureImageTextParameters.SignerTextHorizontalAlignment;
-import eu.europa.esig.dss.model.pades.SignatureImageTextParameters.SignerTextPosition;
 import eu.europa.esig.dss.model.pades.SignatureImageTextParameters.SignerTextVerticalAlignment;
 import eu.europa.esig.dss.pdf.pdfbox.visible.defaultdrawer.ImageMerger;
 import eu.europa.esig.dss.pdf.pdfbox.visible.defaultdrawer.ImageTextWriter;
-import model.certificates.Certificate;
 import text.FitTextInRectangle;
 import text.FormattableString;
 
@@ -52,11 +45,11 @@ public class AdobeLikeSignatureAspect extends SignatureAspect {
 		
 		tp.setBackgroundColor(new Color ( 0f, 0f, 0f, .1f ));
 		tp.setFont(new DSSJavaFont("arial"));
-		
+		/*
 		InMemoryDocument IMDImage = null;
 		
-		String leftText = "Gaius Iulius Chaesar Maximus Augustus";
-		String rightText = "Digitally signed by Botea Florin\nReason: Semnez acest document in calitate de administrator\nLocation: Bucuresti\nDate 23-03-2020 +3000 gtm";
+		String leftText = "A";
+		String rightText = "B";
 		
 		FitTextInRectangle ftr = new FitTextInRectangle();
 		leftText = ftr.formatTextInRatio(leftText, new Font("arial", Font.PLAIN, 1), 60, 50);
@@ -89,7 +82,7 @@ public class AdobeLikeSignatureAspect extends SignatureAspect {
 		}
 		
 		this._getSIP().setImage(IMDImage);
-		
+		*/
 		// fa asta neaparat daca nu vrei sa ai o eroare
 		this.setSize(SignatureSize.MEDIUM);
 		this.setPosition(SignaturePosition.TOP_LEFT);
@@ -97,10 +90,11 @@ public class AdobeLikeSignatureAspect extends SignatureAspect {
 	
 	public String getText() {
 		String text = "";
-		text += ("Digitally signed by " + cert.getHolderNameName()) + "\n";
-		text += isVisibleSerialNumber ? ("SN: " + cert.getSerialNumber() + "\n") : "";
-		text += this.isVisibleReason ? ("Reason: " + reason + "\n") : "";
-		text += this.isVisibleLocation ? ("Location: " + location + "\n") : "";
+		text += ("Digitally signed by " + cert.getIssuedTo()) + "\n";
+		text += this.organization != null && this.organization.trim().length() > 1 ? ("O: " + this.organization.trim() + "\n") : "";
+		text += isVisibleSerialNumber ? ("SN: " + cert.getSerialNumber().trim() + "\n") : "";
+		text += this.isVisibleReason && this.reason != null && this.reason.length() > 1 ? ("Reason: " + reason.trim() + "\n") : "";
+		text += this.isVisibleLocation && this.location != null && this.location.length() > 1 ? ("Location: " + location.trim() + "\n") : "";
 		text += this.getDateTime(1);
 		return text;
 	}
@@ -139,7 +133,7 @@ public class AdobeLikeSignatureAspect extends SignatureAspect {
 
 	@Override
 	protected void reDraw() {
-		String leftText = this.cert.getHolderNameName();
+		String leftText = this.cert.getIssuedTo();
 		String rightText = getText();
 		
 		formattedLeftText = formattableString.fitInRatio(leftText, this.getSize().getWidth()/2, this.getSize().getHeight());

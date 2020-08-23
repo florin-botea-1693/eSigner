@@ -307,6 +307,7 @@ public class PDFSigningController {
 		dialog.getCancelButton().addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				continueSigning.setValue(false);
+				view.getParentJFrame().setEnabled(true);
 				dialog.dispose();
 			}
 		});

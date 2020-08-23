@@ -48,7 +48,7 @@ public class PDFVisibleSigning implements SigningMode {// class asta se instanti
 		
 		if (pdDocument.getNumberOfPages() < this.signatureAspect.getPage())
 			this.signatureAspect.setPage(pdDocument.getNumberOfPages());
-		System.out.println(this.signatureAspect.getPage());
+		
 		FileDocument toSignDocument = new FileDocument(file);
 		padesParameters.setImageParameters(signatureAspect.getSIP());
 		ToBeSigned dataToSign = service.getDataToSign(toSignDocument, padesParameters);

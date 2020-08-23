@@ -1,0 +1,30 @@
+2020-08-19 15:07:54,319  INFO | AWT-EventQueue-0 | eu.europa.esig.dss.validation.CommonCertificateVerifier | + New CommonCertificateVerifier created. 
+validating on server
+can signtrue
+Signing with visible signature
+Constructing signature aspect
+Digitally signed 
+by Botea Florin
+Date: 
+2020-08-19 
+15:08 UTC+27
+Digitally signed 
+by Botea Florin
+Date: 
+2020-08-19 
+15:08 UTC+27
+2020-08-19 15:08:22,398  WARN | Thread-1 | e.e.e.d.p.pdfbox.visible.defaultdrawer.ImageTextWriter  | Transparency detected and enabled (Be aware: not valid with PDF/A !) 
+2020-08-19 15:08:22,507  WARN | Thread-1 | e.e.e.d.p.pdfbox.visible.defaultdrawer.ImageTextWriter  | Transparency detected and enabled (Be aware: not valid with PDF/A !) 
+2020-08-19 15:08:22,520  WARN | Thread-1 | e.e.e.dss.pdf.pdfbox.visible.defaultdrawer.ImageMerger  | Transparency detected and enabled (Be aware: not valid with PDF/A !) 
+2020-08-19 15:08:22,805  WARN | Thread-1 | e.e.e.d.p.pdfbox.visible.AbstractPdfBoxSignatureDrawer  | No color profile is present in the document. Not compatible with PDF/A 
+2020-08-19 15:08:22,816  WARN | Thread-1 | e.e.e.d.p.p.v.n.SignatureFieldDimensionAndPositionBuilder | Cannot access the image metadata : Cannot read image metadata. MimeType or image name must be specified!. Returns default info. 
+2020-08-19 15:08:23,157  INFO | Thread-1 | e.e.esig.dss.token.AbstractSignatureTokenConnection     | Signature algorithm : SHA256withRSA 
+2020-08-19 15:08:23,177  WARN | Thread-1 | e.e.e.d.p.pdfbox.visible.AbstractPdfBoxSignatureDrawer  | No color profile is present in the document. Not compatible with PDF/A 
+2020-08-19 15:08:23,178  WARN | Thread-1 | e.e.e.d.p.p.v.n.SignatureFieldDimensionAndPositionBuilder | Cannot access the image metadata : Cannot read image metadata. MimeType or image name must be specified!. Returns default info. 
+2020-08-19 15:08:23,230  WARN | Thread-1 | e.e.e.d.p.pdfbox.visible.AbstractPdfBoxSignatureDrawer  | No color profile is present in the document. Not compatible with PDF/A 
+2020-08-19 15:08:23,236  WARN | Thread-1 | e.e.e.d.p.p.v.n.SignatureFieldDimensionAndPositionBuilder | Cannot access the image metadata : Cannot read image metadata. MimeType or image name must be specified!. Returns default info. 
+2020-08-19 15:10:42,339  INFO | AWT-EventQueue-0 | eu.europa.esig.dss.validation.CommonCertificateVerifier | + New CommonCertificateVerifier created. 
+2020-08-19 15:14:24,009  INFO | AWT-EventQueue-0 | eu.europa.esig.dss.validation.CommonCertificateVerifier | + New CommonCertificateVerifier created. 
+2020-08-19 15:15:26,694  INFO | AWT-EventQueue-0 | eu.europa.esig.dss.validation.CommonCertificateVerifier | + New CommonCertificateVerifier created. 
+2020-08-19 15:16:03,554  INFO | AWT-EventQueue-0 | eu.europa.esig.dss.validation.CommonCertificateVerifier | + New CommonCertificateVerifier created. 
+2020-08-19 15:16:58,806  INFO | AWT-EventQueue-0 | eu.europa.esig.dss.validation.CommonCertificateVerifier | + New CommonCertificateVerifier created. 

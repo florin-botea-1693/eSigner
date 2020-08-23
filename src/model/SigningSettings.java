@@ -48,6 +48,11 @@ public class SigningSettings {
             System.out.println(e.getMessage());
         }
         */
+		try {
+			Class.forName("org.sqlite.JDBC");
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		}
 		try (Statement stmt = connect().createStatement())
 		{
 			stmt.execute("CREATE TABLE IF NOT EXISTS signing_settings("

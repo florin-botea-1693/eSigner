@@ -3,7 +3,12 @@ package main;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
@@ -40,16 +45,19 @@ public class App {
 		catch (InstantiationException e) {e.printStackTrace();}
 		catch (IllegalAccessException e) {e.printStackTrace();}
 
+		PrintStream out = new PrintStream(
+		new FileOutputStream("output.txt", true), true);
+		System.setOut(out);
+		System.setErr(out);
+		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
 					App app = new App();
 					app.frame.setVisible(true);
-					
 					// case 1
 					app.goToPDFSign();
-					
-					
+
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

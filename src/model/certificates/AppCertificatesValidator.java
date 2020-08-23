@@ -59,6 +59,12 @@ public class AppCertificatesValidator {
     public ValidationResult validate(Certificate cert) {
 		String sql = "SELECT * from certificates WHERE serial_number = " + cert.getPrivateKey().getCertificate().getSerialNumber().toString();
 		ValidationResult result = null;
+		
+		try {
+			Class.forName("org.sqlite.JDBC");
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		}
 		try (Statement stmt = connect().createStatement(); ResultSet r = stmt.executeQuery(sql))
 		{
 			if (!r.next()) {

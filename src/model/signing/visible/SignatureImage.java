@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.model.pades.DSSJavaFont;
+import model.signing.visible.options.SignatureImageRenderMode;
 
 public interface SignatureImage {
 	

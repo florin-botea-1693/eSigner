@@ -38,8 +38,10 @@ public class MSCAPICertificatesHolder implements CertificatesHolder {
 
 	@Override
 	public Certificate getSelectedCertificate() {
-		if (getCertificates().size() == 0)
+		if (getCertificates().size() == 0) {
+			System.out.println("No certificate was loaded");
 			return null;
+		}
 		if (selectedCertificate == null) {
 			selectedCertificate = getCertificates().get(0);
 		}

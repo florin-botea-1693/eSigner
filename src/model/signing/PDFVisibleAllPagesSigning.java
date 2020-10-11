@@ -1,5 +1,6 @@
 package model.signing;
 
+import java.awt.Rectangle;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -25,6 +26,8 @@ import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.model.SignatureValue;
 import eu.europa.esig.dss.model.ToBeSigned;
 import eu.europa.esig.dss.model.pades.SignatureImageParameters;
+import eu.europa.esig.dss.model.pades.SignatureImageParameters.VisualSignatureAlignmentHorizontal;
+import eu.europa.esig.dss.model.pades.SignatureImageParameters.VisualSignatureAlignmentVertical;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
@@ -64,9 +67,8 @@ public class PDFVisibleAllPagesSigning implements SigningMode {
 
 	    PDSignatureField signatureField = new PDSignatureField(acroForm);
 	    acroFormFields.add(signatureField);
-	    SignatureImageParameters sip = this.signatureAspect.getSIP();
 	    for (PDPage pdPage : pdDocument.getPages()) {
-	        addSignatureField(pdDocument, pdPage, sip, signatureField);
+	        addSignatureField(pdDocument, pdPage, signatureField);
 	    }
 	    pdDocument.getDocumentCatalog().getCOSObject().setNeedToBeUpdated(true);
 	    pdDocument.save(result);
@@ -74,27 +76,31 @@ public class PDFVisibleAllPagesSigning implements SigningMode {
       	
       	// gasim campul de semnatura
       	FileDocument toSignDocument = new FileDocument(result);
-		this.service.getAvailableSignatureFields(toSignDocument);
-		this.padesParameters.setSignatureFieldId(this.service.getAvailableSignatureFields(toSignDocument).get(0));
-		this.padesParameters.setImageParameters(this.signatureAspect.getSIP());
-      	System.out.println(this.service.getAvailableSignatureFields(toSignDocument).get(0));
-      	SignatureTokenConnection token = this.certificatesHolder.getToken();
-      	Certificate cert = this.certificatesHolder.getSelectedCertificate();
+		service.getAvailableSignatureFields(toSignDocument);
+		padesParameters.setSignatureFieldId(this.service.getAvailableSignatureFields(toSignDocument).get(0));
+		SignatureImageParameters sip = signatureAspect.generateSignatureImageParameters(pdDocument, 1);
+		padesParameters.setImageParameters(sip);
+
+      	SignatureTokenConnection token = certificatesHolder.getToken();
+      	Certificate cert = certificatesHolder.getSelectedCertificate();
 		// semneaza campul respectiv
-		ToBeSigned dataToSign = this.service.getDataToSign(toSignDocument, this.padesParameters);
-		SignatureValue signatureValue = token.sign(dataToSign, this.padesParameters.getDigestAlgorithm(), cert.getPrivateKey());
-		DSSDocument signedDocument = this.service.signDocument(toSignDocument, this.padesParameters, signatureValue);
+		ToBeSigned dataToSign = service.getDataToSign(toSignDocument, padesParameters);
+		SignatureValue signatureValue = token.sign(dataToSign, padesParameters.getDigestAlgorithm(), cert.getPrivateKey());
+		DSSDocument signedDocument = service.signDocument(toSignDocument, padesParameters, signatureValue);
 		signedDocument.save(result);
 	}
 
 	//=======================||
 	// HELPERS
 	//=======================||
-	public void addSignatureField(PDDocument pdDocument, PDPage pdPage, SignatureImageParameters sip, PDSignatureField signatureField) throws IOException {
-	    
+	public void addSignatureField(PDDocument pdDocument, PDPage pdPage, PDSignatureField signatureField) throws IOException 
+	{
 	    PDAnnotationWidget widget = signatureField.getWidgets().get(0);
-	    float posX = this.getSignaturePosX(pdPage, sip); float posY = this.getSignaturePosY(pdPage, sip);
-	    PDRectangle rect = new PDRectangle(posX, posY, sip.getWidth(), sip.getHeight());
+	    Rectangle r = signatureAspect.simulateInPage(pdPage, true);
+	    //PDRectangle rect = new PDRectangle((int) r.getX(), (int) r.getY(), (int) r.getWidth(), (int) r.getHeight());
+	    float posX = this.getSignaturePosX(pdPage, (int) r.getWidth());
+	    float posY = this.getSignaturePosY(pdPage, (int) r.getHeight());
+	    PDRectangle rect = new PDRectangle(posX, posY, (int) r.getWidth(), (int) r.getHeight());
 	    widget.setRectangle(rect);
 	    widget.setPage(pdPage);
 	    widget.getCOSObject().setNeedToBeUpdated(true);
@@ -105,7 +111,7 @@ public class PDFVisibleAllPagesSigning implements SigningMode {
 	    form.setResources(res);
 	    form.setFormType(1);
 	    PDRectangle bbox = new PDRectangle(rect.getWidth(), rect.getHeight());
-	    float height = bbox.getHeight();
+	    //float height = bbox.getHeight();
 	    form.setBBox(bbox);
 
 	    PDAppearanceDictionary appearance = new PDAppearanceDictionary();
@@ -118,33 +124,39 @@ public class PDFVisibleAllPagesSigning implements SigningMode {
 	    pdPage.getCOSObject().setNeedToBeUpdated(true);
 	}
 	
-	public float getSignaturePosX(PDPage pdPage, SignatureImageParameters sip) {
-		float x = 0;
-		switch (sip.getAlignmentHorizontal()) {
-			case LEFT:
-			break;
-			case CENTER:
-				x = (pdPage.getMediaBox().getWidth() - sip.getWidth())/2;
-			break;
-			case RIGHT:
-				x = pdPage.getMediaBox().getWidth() - sip.getWidth();
-			break;
-		}
-		return x;
+	// o mut de aici.... si o fac generala....
+	private float getSignaturePosX(PDPage pdPage, float signatureWidth) 
+	{
+		VisualSignatureAlignmentHorizontal alignment = signatureAspect.getPosition().getHorizontalAlignment();
+		float visibleRange = pdPage.getMediaBox().getWidth() - signatureWidth;
+		
+		if (alignment == VisualSignatureAlignmentHorizontal.LEFT)
+			return 0;
+		
+		if (alignment == VisualSignatureAlignmentHorizontal.CENTER)
+			return visibleRange/2;
+		
+		if (alignment == VisualSignatureAlignmentHorizontal.RIGHT)
+			return visibleRange;
+		
+		return (float) (signatureAspect.getCustomPosition().getX() * visibleRange / 100);
 	}
 	
-	public float getSignaturePosY(PDPage pdPage, SignatureImageParameters sip) {
-		float y = 0;
-		switch (sip.getAlignmentVertical()) {
-			case TOP:
-				y = pdPage.getMediaBox().getHeight() - sip.getHeight();
-			break;
-			case MIDDLE:
-				y = (pdPage.getMediaBox().getHeight() - sip.getHeight())/2;
-			break;
-			case BOTTOM:
-			break;
-		}
-		return y;
+	private float getSignaturePosY(PDPage pdPage, float signatureHeight) 
+	{
+		VisualSignatureAlignmentVertical alignment = signatureAspect.getPosition().getVerticalAlignment();
+		float visibleRange = pdPage.getMediaBox().getHeight() - signatureHeight;
+		
+		if (alignment == VisualSignatureAlignmentVertical.TOP)
+			return visibleRange;
+			
+		if (alignment == VisualSignatureAlignmentVertical.MIDDLE)
+			return visibleRange/2;
+		
+		if (alignment == VisualSignatureAlignmentVertical.BOTTOM)
+			return signatureHeight;
+		
+		double invertedPctY = 100 - signatureAspect.getCustomPosition().getY();
+		return (float) (invertedPctY * visibleRange / 100);
 	}
 }

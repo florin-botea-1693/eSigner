@@ -12,6 +12,7 @@ import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.model.SignatureValue;
 import eu.europa.esig.dss.model.ToBeSigned;
+import eu.europa.esig.dss.model.pades.SignatureImageParameters;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
@@ -47,9 +48,8 @@ public class PDFVisibleAllPagesRealSigning implements SigningMode {
 		String currentPath = file.getAbsolutePath();
 		for (int i=1; i <= pdDocument.getNumberOfPages(); i++) {
 			FileDocument toSignDocument = new FileDocument(new File(currentPath));
-			this.signatureAspect.setPage(i);
-			this.padesParameters.setSignatureFieldId(null);
-			this.padesParameters.setImageParameters(this.signatureAspect.getSIP());
+			SignatureImageParameters sip = signatureAspect.generateSignatureImageParameters(pdDocument, i);
+			this.padesParameters.setImageParameters(sip);
 			ToBeSigned dataToSign = this.service.getDataToSign(toSignDocument, this.padesParameters);
 			SignatureValue signatureValue = token.sign(dataToSign, this.padesParameters.getDigestAlgorithm(), cert.getPrivateKey());
 			DSSDocument signedDocument = this.service.signDocument(toSignDocument, this.padesParameters, signatureValue);

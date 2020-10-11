@@ -11,9 +11,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import model.signing.visible.SignaturePosition;
-import model.signing.visible.SignatureSize;
-import model.signing.visible.SigningPage;
+import model.signing.visible.options.SignaturePosition;
+import model.signing.visible.options.SignatureSize;
+import model.signing.visible.options.SigningPage;
 
 public class SigningSettings {
 	private static SigningSettings instance;

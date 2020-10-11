@@ -2,6 +2,7 @@ package view;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -17,168 +18,141 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-import model.signing.visible.SignaturePosition;
-import model.signing.visible.SignatureSize;
-import model.signing.visible.SigningPage;
+import model.SigningModel;
+import model.signing.visible.options.SignaturePosition;
+import model.signing.visible.options.SignatureSize;
+import model.signing.visible.options.SigningPage;
 import net.miginfocom.swing.MigLayout;
 import utils.PropertyChangeSupportExtended;
+import java.awt.Component;
+import javax.swing.Box;
 
-public class PDFSigningView extends JPanel {
-	private final JFrame parent;
+public class PDFSigningView extends JPanel// implements SigningView
+{
+	
+	public final ChooseFileAndCertificate chooseFileAndCertificate;
+	public final JLabel label_organization;
+	public final JTextField input_organization;
+	public final JLabel label_reason;
+	public final JTextField input_reason;
+	public final JCheckBox check_visibleReason;
+	public final JLabel label_location;
+	public final JTextField input_location;
+	public final JCheckBox check_visibleLocation;
+	public final JLabel label_signingMode;
+	public final JComboBox select_visibleSignature;
+	public final JComboBox select_signingPage;
+	public final JCheckBox check_realSignature;
+	public final JLabel label_customPage;
+	public final JTextField input_customPage;
+	public final JLabel label_aspectAndPosition;
+	public final JButton button_togglePreview;
+	public final JComboBox select_signatureSize;
+	public final JComboBox select_signaturePosition;
+	public final JButton button_sign;
+	public final SigningLog signingLog;
+	public final SigningPreview preview;
+	public final JPanel LEFT_PANEL;
+	public final JPanel RIGHT_PANEL;
+	public final JButton button_preview;
 
-	private PropertyChangeSupportExtended observed;
-	
-	public final JTextField choosedFilesInput;
-	public final JButton chooseFilesButton;
-	public final JComboBox certificateSelector;
-	public final JButton performSignButton;
-	public final JTextField signingReason; 
-	public final JTextField signingLocation;
-	public final JComboBox signatureVisibility;
-	public final JCheckBox isRealSignature;
-	public final JComboBox signingPage;
-	public final JTextField customSigningPage;
-	public final JComboBox signatureSize;
-	public final JComboBox signaturePosition;
-	public final JTextPane signingLog;
-	public final JCheckBox isVisibleReason;
-	public final JCheckBox isVisibleLocation;
-	public final JCheckBox isVisibleSN;
-	public final JTextField organization;
-	
-	private JLabel lblNewLabel;
-	private JLabel customPageL;
-	public final JLabel label_serialNumber;
-	
-	private Style successStyle;
-	private Style errorStyle;
-	private JLabel lblOrganization;
-	
-	public JFrame getParentJFrame() { return parent;}
 
-	//=======================||
-	// >>> CREATE VISUAL <<<
-	//=======================||
-	public PDFSigningView(JFrame parent) {
-		this.parent = parent;
+	public PDFSigningView()
+	{
+		this.setLayout(new GridLayout(1, 2));
 		
-		this.observed = new PropertyChangeSupportExtended(this);
+		this.LEFT_PANEL = new JPanel();
+		this.RIGHT_PANEL = new JPanel();
 		
-		//setPreferredSize(new Dimension(600, 600));
+		//=========================================||
+		// LEFT PANEL
+		//=========================================||
+		LEFT_PANEL.setLayout(new MigLayout("", "[grow]", "[69.00,top][top][grow]"));
 		
-		setAutoscrolls(true);
+		this.chooseFileAndCertificate = new ChooseFileAndCertificate();
 		
-		setLayout(new MigLayout("", "[128.00,grow][220][260,grow][142.00][112.00]", "[][36.00][27.00][20px:n][20px:20px][29.00][][31.00][][31.00][][29.00][25.00][400,grow,fill]"));
+		this.label_organization = new JLabel("Organization");
 		
-		choosedFilesInput = new JTextField();
-		choosedFilesInput.setColumns(10);
-		choosedFilesInput.setEnabled(false);
-		add(choosedFilesInput, "cell 0 0 3 1,growx");
-		
-		chooseFilesButton = new JButton("PDF(s) to sign");
-		add(chooseFilesButton, "cell 3 0 2 1,alignx right");
-		
-		certificateSelector = new JComboBox();//signingModel.getCertificates().toArray()
-		add(certificateSelector, "cell 0 1 5 1,growx");
-		
-		//add(new JSeparator(SwingConstants.HORIZONTAL), "cell 7 1");
-		
-		label_serialNumber = new JLabel("Serial number");
-		add(label_serialNumber, "cell 0 2 3 1");
-		
-		this.isVisibleSN = new JCheckBox("Visible SN");
-		add(this.isVisibleSN, "cell 3 2 2 1,alignx right");
-		
-		lblOrganization = new JLabel("Organization");
-		add(lblOrganization, "cell 0 3");
-		
-		organization = new JTextField();
-		add(organization, "cell 0 4 5 1,growx");
-		organization.setColumns(10);
-		
-		JLabel label_reason = new JLabel("Reason");
-		add(label_reason, "cell 0 5");
-		this.signingReason = new JTextField();
-		add(this.signingReason, "cell 0 6 4 1,growx");
-		this.signingReason.setColumns(10);
-		this.isVisibleReason = new JCheckBox("Visible");
-		add(this.isVisibleReason, "cell 4 6,alignx right");
-		
-		JLabel label_location = new JLabel("Location");
-		add(label_location, "cell 0 7 5 1");
-		this.signingLocation = new JTextField();
-		add(this.signingLocation, "cell 0 8 4 1,growx");
-		signingLocation.setColumns(10);
-		this.isVisibleLocation = new JCheckBox("Visible");
-		add(this.isVisibleLocation, "cell 4 8,alignx right");
-		JLabel label_signingMode = new JLabel("Signing mode");
-		add(label_signingMode, "cell 0 9");
-		
-		this.signatureVisibility = new JComboBox(new String[]{"Invisible signature", "Visible signature"});
-		add(this.signatureVisibility, "cell 0 10,growx");
-		
-		this.signingPage = new JComboBox(SigningPage.values());
-		add(this.signingPage, "cell 1 10,growx");
-		
-		this.isRealSignature = new JCheckBox("Real signature");
-		add(this.isRealSignature, "cell 2 10");
-		
-		JLabel label_customPage = new JLabel("page");
-		add(label_customPage, "cell 3 10,alignx trailing");
-		this.customSigningPage = new JTextField();
-		add(this.customSigningPage, "cell 4 10,growx");
-		this.customSigningPage.setColumns(10);
-		
-		JLabel label_aspectAndPos = new JLabel("Aspect and position");
-		add(label_aspectAndPos, "cell 0 11");
-		
-		this.signatureSize = new JComboBox(SignatureSize.values());
-		add(this.signatureSize, "cell 0 12,growx");
-		
-		this.signaturePosition = new JComboBox(SignaturePosition.values());
-		add(this.signaturePosition, "cell 1 12,growx");
-		
-		this.performSignButton = new JButton("Sign");
-		add(this.performSignButton, "cell 4 12,alignx right");
-		
-		JScrollPane sf = new JScrollPane();
-		sf.setPreferredSize(new Dimension(200, 100));
-		add(sf, "cell 0 13 5 1,growx");
-		
-		this.signingLog = new JTextPane();
-		sf.setViewportView(this.signingLog);
-		//sf.setPreferredSize(new Dimension(this.getWidth(), this.getHeight()));
+		this.input_organization = new JTextField();
 
-		successStyle = signingLog.addStyle("success", null);
-		StyleConstants.setForeground(successStyle, Color.GREEN);
-		errorStyle = signingLog.addStyle("error", null);
-		StyleConstants.setForeground(errorStyle, Color.RED);
-	}
-	
-	public void logSuccessln(String message) {
-		StyledDocument doc = signingLog.getStyledDocument();
-		try {
-			doc.insertString(doc.getLength(), (doc.getLength() > 0 ? "\n" : "")+message, successStyle);
-		} catch (BadLocationException e) {
-			e.printStackTrace();
+		this.label_reason = new JLabel("Reason");
+		
+		this.input_reason = new JTextField();
+
+		this.check_visibleReason = new JCheckBox("Visible");
+		
+		this.label_location = new JLabel("Location");
+		
+		this.input_location = new JTextField();
+
+		this.check_visibleLocation = new JCheckBox("Visible");
+
+		this.label_signingMode = new JLabel("Signing mode");
+		
+		this.select_visibleSignature = new JComboBox(new String[]{"Invisible signature", "Visible signature"});
+		
+		this.select_signingPage = new JComboBox(SigningPage.values());
+		
+		this.check_realSignature = new JCheckBox("Real signature");
+		
+		this.label_customPage = new JLabel("page");
+
+		this.input_customPage = new JTextField();
+		
+		this.label_aspectAndPosition = new JLabel("Aspect and position");
+
+		this.button_togglePreview = new JButton(">>");
+		
+		this.select_signatureSize = new JComboBox(SignatureSize.values());
+		
+		this.select_signaturePosition = new JComboBox(SignaturePosition.values());
+		
+		this.button_preview = new JButton(">>");
+		
+		this.button_sign = new JButton("Sign");
+		
+		this.signingLog = new SigningLog();
+		
+		// build-left-panel
+		{
+			JPanel signingOptions = new JPanel();
+			signingOptions.setLayout(new MigLayout("", "[grow]", "[][][][][][][][][][][]"));
+			signingOptions.add(this.label_organization, "cell 0 0");
+			signingOptions.add(this.input_organization, "cell 0 1,grow");
+			signingOptions.add(this.label_reason, "cell 0 2");
+			signingOptions.add(this.input_reason, "cell 0 3,grow");
+			signingOptions.add(this.check_visibleReason, "cell 0 3");
+			signingOptions.add(this.label_location, "cell 0 4");
+			signingOptions.add(this.input_location, "cell 0 5,grow");
+			signingOptions.add(this.check_visibleLocation, "cell 0 5");
+			signingOptions.add(this.label_signingMode, "cell 0 6");
+			signingOptions.add(this.select_visibleSignature, "cell 0 7,grow");
+			signingOptions.add(this.select_signingPage, "cell 0 7,grow");
+			signingOptions.add(this.check_realSignature, "cell 0 7,grow");
+			signingOptions.add(this.label_customPage, "cell 0 7");
+			signingOptions.add(this.input_customPage, "cell 0 7,grow");
+			signingOptions.add(this.label_aspectAndPosition, "flowx,cell 0 8");
+			signingOptions.add(Box.createGlue(), "cell 0 8,grow");
+			signingOptions.add(button_preview, "cell 0 8");
+			signingOptions.add(this.select_signatureSize, "flowx,cell 0 9");
+			signingOptions.add(this.select_signaturePosition, "cell 0 9");
+			signingOptions.add(Box.createGlue(), "cell 0 9,grow");
+			signingOptions.add(this.button_sign, "cell 0 9");
+			
+			LEFT_PANEL.add(chooseFileAndCertificate, "cell 0 0,growx");
+			LEFT_PANEL.add(signingOptions, "cell 0 1,growx");
+			LEFT_PANEL.add(signingLog, "cell 0 2,grow");
 		}
-	}
-	
-	public void logErrorln(String message) {
-		StyledDocument doc = signingLog.getStyledDocument();
-		try {
-			doc.insertString(doc.getLength(), (doc.getLength() > 0 ? "\n" : "")+message, errorStyle);
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public void clearLog() {
-		StyledDocument doc = signingLog.getStyledDocument();
-		try {
-			doc.remove(0, doc.getLength());
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-		}
+		
+		
+		//=========================================||
+		// RIGHT PANEL
+		//=========================================||
+		RIGHT_PANEL.setLayout(new MigLayout("", "[354px,grow,fill]", "[106px,grow,fill]"));
+		this.preview = new SigningPreview();
+		RIGHT_PANEL.add(preview, "cell 0 0,alignx left,aligny top");
+		
+		this.add(LEFT_PANEL);
+		// this.add(RIGHT_PANEL);
 	}
 }

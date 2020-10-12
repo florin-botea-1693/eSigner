@@ -31,6 +31,7 @@ import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 
 import model.signing.visible.options.SignaturePosition;
+import model.signing.visible.options.SignatureSize;
 import net.miginfocom.swing.MigLayout;
 
 public class SigningPreview extends JPanel
@@ -45,11 +46,18 @@ public class SigningPreview extends JPanel
 	public final JLabel label_documentName;
 	
 	private File[] files = new File[] {};
-	private PDFRenderer previewedPdf;
+	private PDDocument previewedPdf;
+	
+	private JPanel mainPanel = new JPanel();
+	private JPanel loadingPanel = new JPanel();
+	
+	private int file_index = 0;
+	private int page_index = 0;
+	private SignaturePosition signaturePosition;
+	
 
 	public SigningPreview()
 	{
-
 		ImageIcon imageIcon = new ImageIcon();
 		Image image = imageIcon.getImage();
 		this.backgroundPanel = new BackgroundPanel(image);
@@ -83,9 +91,18 @@ public class SigningPreview extends JPanel
 			fileAndPage.add(label_documentName, "cell 1 2,alignx right");
 		}
 		
-		this.setLayout(new MigLayout("", "[grow]", "[grow,fill][]"));
-		this.add(backgroundPanel, "cell 0 0,grow");
-		this.add(fileAndPage, "cell 0 1,growx");
+		mainPanel.setLayout(new MigLayout("", "[grow]", "[grow,fill][]"));
+		mainPanel.add(backgroundPanel, "cell 0 0,grow, hidemode 3");
+		mainPanel.add(loadingPanel, "cell 0 0,grow, hidemode 3");
+		mainPanel.add(fileAndPage, "cell 0 1,growx, hidemode 3");
+		
+		ImageIcon loading = new ImageIcon("ajax-loader.gif");
+		loadingPanel.add(new JLabel("loading... ", loading, JLabel.CENTER));
+
+		this.setLayout(new MigLayout("", "[grow]", "[grow,fill]"));
+		this.add(mainPanel, "cell 0 0, grow, hidemode 3");
+		//this.add(loadingPanel, "cell 0 0, grow, hidemode 3");
+		loadingPanel.setVisible(false);
 	}
 	
 	public void addFiles(File[] files)
@@ -93,30 +110,63 @@ public class SigningPreview extends JPanel
 		this.files = files;
 		// add range, set file to 1
 		try {
-			this.setPreviewDocument(files[0]);
-			this.setPreviewPage(0);
+			setLoading(true);
+			this.range_document.setMaximum(files.length -1);
+			this.setPreviewDocument(0, true);
+			this.setPreviewPage(0, true);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			ImageIcon imageIcon = new ImageIcon();
+			Image image = imageIcon.getImage();
+			backgroundPanel.setImage(image);
+			setLoading(false);
 		}
 	}
 	
-	private void setPreviewDocument(File file) throws IOException
+	public void setPreviewDocument(int file_index, boolean force) throws IOException
 	{
-		PDDocument document = PDDocument.load(file);
-		previewedPdf = new PDFRenderer(document);
+		if (this.file_index == file_index && !force)
+			return;
+		
+		this.file_index = file_index;
+		this.label_document.setText((file_index + 1) + "/" + this.files.length);
+		File file = files[file_index];
+		this.previewedPdf = PDDocument.load(file);
+		this.range_page.setEnabled(false);
+		this.range_page.setMaximum(previewedPdf.getNumberOfPages() -1);
+		this.setPreviewPage(0, true);
 	}
 	
-	private void setPreviewPage(int page) throws IOException
+	public void setPreviewPage(int page, boolean force)
 	{
-		if (previewedPdf == null)
+		if (this.page_index  == page && !force)
 			return;
-		BufferedImage bim = previewedPdf.renderImageWithDPI(page, 300, ImageType.RGB);
-		backgroundPanel.setImage(bim);
+		
+		this.label_page.setText((page + 1) + "/" + this.previewedPdf.getNumberOfPages());
+		this.page_index = page;
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					setLoading(true);
+					PDFRenderer reader = new PDFRenderer(previewedPdf);
+					BufferedImage bim = reader.renderImageWithDPI(page, 300, ImageType.RGB);
+					backgroundPanel.setImage(bim);
+					setLoading(false);
+				} catch (IOException e) {
+					e.printStackTrace();
+					ImageIcon imageIcon = new ImageIcon();
+					Image image = imageIcon.getImage();
+					backgroundPanel.setImage(image);
+					setLoading(false);
+				}
+			}
+		}).start();
 	}
 
 	public void setDraggableSignatureFieldPosition(SignaturePosition selectedItem)
-	{	
+	{
+		this.signaturePosition = selectedItem;
 		switch (selectedItem) {
 			case TOP_LEFT:
 				this.draggableSignatureField.setLocationPct(0, 0);
@@ -146,5 +196,18 @@ public class SigningPreview extends JPanel
 				this.draggableSignatureField.setLocationPct(100, 100);
 				break;
 		}
+	}
+	
+	public void setDraggableSignatureFieldSize(SignatureSize size) {
+		this.draggableSignatureField.setSize(size);
+		this.setDraggableSignatureFieldPosition(signaturePosition);
+	}
+	
+	private void setLoading(boolean b)
+	{
+		backgroundPanel.setVisible(!b);
+		loadingPanel.setVisible(b);
+		range_document.setEnabled(!b);
+		range_page.setEnabled(!b);
 	}
 }

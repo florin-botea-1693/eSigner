@@ -98,6 +98,7 @@ public class PDFSigningView extends JPanel// implements SigningView
 		this.label_customPage = new JLabel("page");
 
 		this.input_customPage = new JTextField();
+		this.input_customPage.setEditable(false);
 		
 		this.label_aspectAndPosition = new JLabel("Aspect and position");
 

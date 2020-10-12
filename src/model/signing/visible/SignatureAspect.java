@@ -20,6 +20,7 @@ import model.certificates.Certificate;
 import model.signing.options.PdfSigningOptions;
 import model.signing.visible.options.SignaturePosition;
 import model.signing.visible.options.SignatureSize;
+import utils.RectangleContainer;
 
 /*
  * DOAR LA SEMNATURILE VIZIBILE
@@ -81,7 +82,7 @@ public abstract class SignatureAspect
 		this.size = s.getSize();
 		this.reason = s.getReason();
 		this.location = s.getLocation();
-		this.organization = s.getLocation();
+		this.organization = s.getOrganization();
 		this.customPosition = s.getCustomPosition();
 		this.page = s.getCustomPage();
 		System.out.println("custom page is " + this.page);
@@ -95,177 +96,61 @@ public abstract class SignatureAspect
 	 */
 	
 	abstract public SignatureImageParameters generateSignatureImageParameters(PDDocument doc, int page_index);
-	
-	/*
-	public SignatureImageParameters generateSignatureImageParameters() {
-		if (needsRedraw) {
-			System.out.println("Constructing signature aspect");
-			try {
-				AppCertificatesValidator v = AppCertificatesValidator.getInstance();
-				if (! v.validate(cert).canSign)
-					System.exit(1);
-				//nu ai ce cauta aici
-			} catch (Exception e) {}
-			
-			reDraw();
-			needsRedraw = false;
-		} else {
-			System.out.println("Refreshing signature aspect");
-			refresh();
-		}
-		// as putea aici sa incadrez in pagina, dupa ce initial am setat documentul. Plus ca am la dispozitie pctX si pctY si sip.align
-		if (pdDocument == null) throw new Error("No document has been selected for signinature fit");
-		
-		PDPage p = pdDocument.getPage(this.getPage() -1);
-		sip.setxAxis(this.getSignaturePosX(p));
-		sip.setyAxis(p.getMediaBox().getHeight() - sip.getHeight() - this.getSignaturePosY(p));
 
-		return sip;
-	}
-	
-	//================================||
-	// ALTE METODE MARUNTE 
-	//================================||
-	
-	public void setPage(int i) {
-		this.sip.setPage(i);
-	}
-
-	public void setReason(String string)
-	{
-		reason = string;
-		this.needsRedraw = true;
-	}
-
-	public void setLocation(String string) 
-	{
-		location = string;
-		this.needsRedraw = true;
-	}
-
-	public void setVisibleSerialNumber(boolean b)
-	{
-		isVisibleSerialNumber = b;
-		this.needsRedraw = true;
-	}
-	
-	public void setVisibleReason(boolean b) {
-		this.isVisibleReason = b;
-	}
-	
-	public void setVisibleLocation(boolean b) {
-		this.isVisibleLocation = b;
-	}
-
-	public void setCertificate(Certificate cert) 
-	{
-		this.cert = cert;
-		this.needsRedraw = true;
-	}
-
-	public void setSize(SignatureSize size)
-	{
-		this.signatureSize = size;
-		this.sip.setWidth(size.getWidth());
-		this.sip.setHeight(size.getHeight());
-		this.needsRedraw = true;
-	}
-	
-	public void setPosition(SignaturePosition position) 
-	{
-		this.signaturePosition = position;
-		// this.sip.setAlignmentVertical(position.getVerticalAlignment());
-		// this.sip.setAlignmentHorizontal(position.getHorizontalAlignment());
-	}
-	
-	public void setPosition(int pctX, int pctY) {
-		this.sip.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.NONE);
-		this.sip.setAlignmentVertical(VisualSignatureAlignmentVertical.NONE);
-		this.pctX = pctX;
-		this.pctY = pctY;
-	}
-	
-	public void setOrganization(String o) {
-		this.organization = o;
-		this.needsRedraw = true;
-	}
-	
-	public SignaturePosition getSignaturePosition() {
-		return this.signaturePosition;
-	}
-	public SignatureSize getSize() {
-		return this.signatureSize;
-	}
-	public boolean isVisibleReason() {
-		return this.isVisibleReason;
-	}
-	public boolean isVisibleLocation() {
-		return this.isVisibleLocation;
-	}
-	public boolean isVisibleSerialNumber() {
-		return this.isVisibleSerialNumber;
-	}
-	public String getOrganization() {
-		return this.organization;
-	}
-	*/
 	/**
 	 * Intoarce un rectangle xy wh cu incadrarea semnaturii in pagina specifica (wh, xy)
 	 * @param page
 	 */
-	public Rectangle simulateInPage(PDPage page) { 
-		return simulateInPage(page, false); 
-	}
-	public Rectangle simulateInPage(PDPage page, boolean revertedY)
+	public Rectangle simulateInPage(PDPage pdPage)
 	{
-		float signatureWidth = size.getPctWidth() * page.getMediaBox().getWidth() / 100;
+		float signatureWidth = size.getPctWidth() * pdPage.getMediaBox().getWidth() / 100;
 		float signatureHeight = size.getPctHeight() * signatureWidth / 100;
-		float posX = getSignaturePosX(page, signatureWidth);
-		float posY = getSignaturePosY(page, signatureWidth, revertedY);
-		return new Rectangle((int)posX, (int)posY, (int)signatureWidth, (int)signatureHeight);
+		
+		RectangleContainer mediabox = new RectangleContainer(0, 0, pdPage.getMediaBox().getWidth(), pdPage.getMediaBox().getHeight());
+		RectangleContainer cropbox = new RectangleContainer(
+			pdPage.getCropBox().getLowerLeftX(), 
+			pdPage.getCropBox().getLowerLeftY(),
+			pdPage.getCropBox().getWidth(),
+			pdPage.getCropBox().getHeight()
+		);
+		RectangleContainer signature = new RectangleContainer(0, 0, signatureWidth, signatureHeight);
+		
+		switch (position.getHorizontalAlignment()) {
+		case LEFT:
+			signature.setX(0);
+			break;
+		case CENTER:
+			signature.setX((cropbox.getWidth()-signatureWidth)/2);
+			break;
+		case RIGHT:
+			signature.setX(cropbox.getWidth()-signatureWidth);
+			break;
+		case NONE:
+			signature.setX(customPosition.x * (cropbox.getWidth()-signatureWidth) / 100);
+			break;
+		}
+		
+		switch (position.getVerticalAlignment()) {
+		case TOP:
+			signature.setY(0);
+			break;
+		case MIDDLE:
+			signature.setY(50 * (cropbox.getHeight()-signatureHeight) / 100);
+			break;
+		case BOTTOM:
+			signature.setY(cropbox.getHeight()-signatureHeight);
+			break;
+		case NONE:
+			signature.setY(customPosition.y * (cropbox.getHeight()-signatureHeight) / 100);
+			break;
+		}
+		
+		mediabox.addChild(cropbox);
+		cropbox.addChild(signature);
+		
+		return new Rectangle((int)signature.getGlobalX(), (int)signature.getGlobalY(), (int)signatureWidth, (int)signatureHeight);
 	}
-	
-	private float getSignaturePosX(PDPage pdPage, float signatureWidth)
-	{
-		VisualSignatureAlignmentHorizontal alignment = position.getHorizontalAlignment();
-		float visibleRange = pdPage.getMediaBox().getWidth() - signatureWidth;
-		
-		if (alignment == VisualSignatureAlignmentHorizontal.LEFT)
-			return 0;
-		
-		if (alignment == VisualSignatureAlignmentHorizontal.CENTER)
-			return visibleRange/2;
-		
-		if (alignment == VisualSignatureAlignmentHorizontal.RIGHT)
-			return visibleRange;
-			
-		float x = this.customPosition.x * visibleRange / 100;
-		x = x >= visibleRange ? visibleRange - signatureWidth : x;
-		
-		return x;
-	}
-	
-	private float getSignaturePosY(PDPage pdPage, float signatureHeight, boolean revertedY)
-	{
-		VisualSignatureAlignmentVertical alignment = position.getVerticalAlignment();
-		float visibleRange = pdPage.getMediaBox().getHeight() - signatureHeight;
 
-		if (alignment == VisualSignatureAlignmentVertical.TOP)
-			return revertedY ? pdPage.getMediaBox().getHeight() - signatureHeight : 0;
-					
-		if (alignment == VisualSignatureAlignmentVertical.MIDDLE)
-			return revertedY ? pdPage.getMediaBox().getHeight()/2 : visibleRange/2;
-		
-		if (alignment == VisualSignatureAlignmentVertical.BOTTOM)
-			return revertedY ? signatureHeight : visibleRange;
-		
-		float y = this.customPosition.y * visibleRange / 100;
-		y = y >= visibleRange ? visibleRange : y;
-		y = revertedY ? pdPage.getMediaBox().getHeight() - y : y;
-				
-		return y;
-	}
-	
 	/**
 	 * Helper method to get date time formatted with \n based on number of splits
 	 * @param splits

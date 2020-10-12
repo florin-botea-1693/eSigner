@@ -63,47 +63,6 @@ public class AdobeLikeSignatureAspect extends SignatureAspect
 		
 		tp.setBackgroundColor(new Color ( 0f, 0f, 0f, .1f ));
 		tp.setFont(new DSSJavaFont("arial"));
-		
-		
-		/*
-		InMemoryDocument IMDImage = null;
-		
-		String leftText = "A";
-		String rightText = "B";
-		
-		FitTextInRectangle ftr = new FitTextInRectangle();
-		leftText = ftr.formatTextInRatio(leftText, new Font("arial", Font.PLAIN, 1), 60, 50);
-		rightText = ftr.formatTextInRatio(rightText, new Font("arial", Font.PLAIN, 1), 60, 50);
-		
-		int leftFontSize = ftr.sizeInHeight(leftText, new Font("arial", Font.PLAIN, 1), 60);
-		int rightFontSize = ftr.sizeInHeight(rightText, new Font("arial", Font.PLAIN, 1), 60);
-		
-		SignatureImageTextParameters tp = new SignatureImageTextParameters();
-		tp.setFont(new DSSJavaFont("arial"));
-		//tp.setTextColor(Color.RED);
-		tp.setSize(24);
-		tp.setBackgroundColor(new Color ( 0f, 0f, 0f, .1f ));
-		tp.setSize(leftFontSize);
-		BufferedImage left = ImageTextWriter.createTextImage(new SignatureImageParameters(), tp, leftText);
-		tp.setSize(rightFontSize);
-		BufferedImage right = ImageTextWriter.createTextImage(new SignatureImageParameters(), tp, rightText);
-		BufferedImage img = ImageMerger.mergeOnRight(left, right, new Color ( 0f, 0f, 0f, .1f ), SignerTextVerticalAlignment.MIDDLE);
-		try {
-			ImageIO.write(img, "gif", new File("foo.gif"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		try {
-			IMDImage = new InMemoryDocument(new FileInputStream("foo.gif"));
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		this._getSIP().setImage(IMDImage);
-		*/
-		// fa asta neaparat daca nu vrei sa ai o eroare
 	}
 	
 	@Override

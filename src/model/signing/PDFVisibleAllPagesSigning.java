@@ -96,11 +96,13 @@ public class PDFVisibleAllPagesSigning implements SigningMode {
 	public void addSignatureField(PDDocument pdDocument, PDPage pdPage, PDSignatureField signatureField) throws IOException 
 	{
 	    PDAnnotationWidget widget = signatureField.getWidgets().get(0);
-	    Rectangle r = signatureAspect.simulateInPage(pdPage, true);
+	    Rectangle r = signatureAspect.simulateInPage(pdPage);
 	    //PDRectangle rect = new PDRectangle((int) r.getX(), (int) r.getY(), (int) r.getWidth(), (int) r.getHeight());
-	    float posX = this.getSignaturePosX(pdPage, (int) r.getWidth());
-	    float posY = this.getSignaturePosY(pdPage, (int) r.getHeight());
-	    PDRectangle rect = new PDRectangle(posX, posY, (int) r.getWidth(), (int) r.getHeight());
+	    
+	    //float posX = this.getSignaturePosX(pdPage, (int) r.getWidth());
+	    //float posY = this.getSignaturePosY(pdPage, (int) r.getHeight());
+	    double posY = pdPage.getMediaBox().getHeight() - r.getY() - r.getHeight();
+	    PDRectangle rect = new PDRectangle((int) r.getX(), (int) posY, (int) r.getWidth(), (int) r.getHeight());
 	    widget.setRectangle(rect);
 	    widget.setPage(pdPage);
 	    widget.getCOSObject().setNeedToBeUpdated(true);

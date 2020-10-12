@@ -1,6 +1,7 @@
 package controller;
 
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -24,7 +25,11 @@ import view.SigningMessage;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -33,6 +38,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import main.App;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList; 
 
 public class PDFSigningController
@@ -212,6 +218,7 @@ public class PDFSigningController
 		view.select_signatureSize.addActionListener (new ActionListener () {
 		    public void actionPerformed(ActionEvent e) {
 		    	model.getSigningOptions().setSize((SignatureSize) view.select_signatureSize.getSelectedItem());
+		    	view.preview.setDraggableSignatureFieldSize((SignatureSize) view.select_signatureSize.getSelectedItem());
 		    }
 		});
 
@@ -256,6 +263,46 @@ public class PDFSigningController
 	    	public void mouseReleased(MouseEvent e) {
 	    		model.getSigningOptions().setPosition(view.preview.draggableSignatureField.getPctX(), view.preview.draggableSignatureField.getPctY());
 	    		// nu o setez custom, ci direct coordonate, iar custom pun in model ca sa evit logica extra acici
+	    	}
+	    	@Override
+	    	public void mouseEntered(MouseEvent e) {}
+	    	@Override
+	    	public void mouseExited(MouseEvent e) {}
+	    });
+		
+		view.preview.range_document.addMouseListener(new MouseListener() {
+	    	@Override
+	    	public void mouseClicked(MouseEvent e) {}
+	    	@Override
+	    	public void mousePressed(MouseEvent e) {}
+	    	@Override
+	    	public void mouseReleased(MouseEvent e) {
+	    		try {
+					view.preview.setPreviewDocument(view.preview.range_document.getValue(), false);
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+	    	}
+	    	@Override
+	    	public void mouseEntered(MouseEvent e) {}
+	    	@Override
+	    	public void mouseExited(MouseEvent e) {}
+	    });
+		
+		view.preview.range_page.addMouseListener(new MouseListener() {
+	    	@Override
+	    	public void mouseClicked(MouseEvent e) {}
+	    	@Override
+	    	public void mousePressed(MouseEvent e) {}
+	    	@Override
+	    	public void mouseReleased(MouseEvent e) {
+	    		if (view.select_signingPage.getSelectedItem() != SigningPage.ALL_PAGES)
+	    		{
+	    			view.select_signingPage.setSelectedItem(SigningPage.CUSTOM_PAGE);
+	    			view.input_customPage.setText(String.valueOf(view.preview.range_page.getValue() +1));
+	    			view.input_customPage.setEnabled(view.select_visibleSignature.getSelectedIndex() != 0);
+	    		}
+	    		view.preview.setPreviewPage(view.preview.range_page.getValue(), false);
 	    	}
 	    	@Override
 	    	public void mouseEntered(MouseEvent e) {}
@@ -341,7 +388,7 @@ public class PDFSigningController
 				boolean b = model.getSigningOptions().isVisibleSignature();
 				view.select_visibleSignature.setSelectedIndex(b ? 1 : 0);
 				view.select_signingPage.setEnabled(b);
-				view.input_customPage.setEnabled(b && view.select_signingPage.getSelectedItem() == SigningPage.CUSTOM_PAGE);
+				//view.input_customPage.setEnabled(b && view.select_signingPage.getSelectedItem() == SigningPage.CUSTOM_PAGE);
 				view.check_realSignature.setEnabled(b && view.select_signingPage.getSelectedItem() == SigningPage.ALL_PAGES);
 				view.select_signaturePosition.setEnabled(b);
 				view.select_signatureSize.setEnabled(b);
@@ -352,7 +399,7 @@ public class PDFSigningController
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
 				view.select_signingPage.setSelectedItem(model.getSigningOptions().getPage());
-				view.input_customPage.setEnabled(model.getSigningOptions().getPage() == SigningPage.CUSTOM_PAGE);
+				//view.input_customPage.setEnabled(model.getSigningOptions().getPage() == SigningPage.CUSTOM_PAGE);
 				view.check_realSignature.setEnabled(model.getSigningOptions().getPage() == SigningPage.ALL_PAGES);
 			}
 		});
@@ -425,7 +472,7 @@ public class PDFSigningController
 		
 		dialog.setModal(false);
 		dialog.setVisible(true);
-		selectedFiles = new File[] {new File("C:/Users/user/Desktop/x.pdf")};
+		//selectedFiles = new File[] {new File("C:/Users/user/Desktop/x.pdf")};
 	    new Thread(new Runnable() {
 	        public void run() {
 	        	SigningMode signer = model.getPdfSigner();

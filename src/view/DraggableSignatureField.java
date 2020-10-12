@@ -5,6 +5,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 import main.App;
+import model.signing.visible.options.SignatureSize;
 
 public class DraggableSignatureField extends JComponent
 {
@@ -15,6 +16,7 @@ public class DraggableSignatureField extends JComponent
 	private volatile int screenY = 0;
 	private volatile double myX = 0;
 	private volatile double myY = 0;
+	private SignatureSize size = SignatureSize.MEDIUM;
 	
 	private int pctX = 0; // percents
 	private int pctY = 0; // percents
@@ -90,10 +92,15 @@ public class DraggableSignatureField extends JComponent
 		this.setLocation(x, y);
 	}
 	
+	public void setSize(SignatureSize size) {
+		this.size = size;
+		this.keepProportionsAndPosition() ;
+	}
+	
 	private void keepProportionsAndPosition() 
 	{
-		int w = parent.getWidth()*30/100;
-		int h = parent.getHeight()*15/100;
+		int w = size.getPctWidth() * parent.getWidth()/100;
+		int h = size.getPctHeight() * w / 100;
 		int x = this.pctX * (this.parent.getWidth()-w) / 100;
 		int y = this.pctY * (this.parent.getHeight()-h) / 100;
 		

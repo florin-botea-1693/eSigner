@@ -1,4 +1,4 @@
-package model.signing;
+package services.signing;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,7 +14,7 @@ import eu.europa.esig.dss.token.SignatureTokenConnection;
 import model.certificates.Certificate;
 import model.certificates.CertificatesHolder;
 
-public class PDFInvisibleSigning implements SigningMode {
+public class PDFInvisibleSigning implements ISigningService {
 
 	private CertificatesHolder certificatesHolder;
 	private PAdESService service;
@@ -28,7 +28,7 @@ public class PDFInvisibleSigning implements SigningMode {
 	}
 
 	@Override
-	public void performSign(File file) throws FileNotFoundException, IOException {
+	public void sign(File file) throws FileNotFoundException, IOException {
 		System.out.println("Signing with invisible signature");
 		SignatureTokenConnection token = certificatesHolder.getToken();
 		Certificate cert = certificatesHolder.getSelectedCertificate();

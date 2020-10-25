@@ -1,9 +1,10 @@
-package model.signing;
+package services.signing;
 
 import java.awt.Rectangle;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -35,7 +36,7 @@ import model.certificates.Certificate;
 import model.certificates.CertificatesHolder;
 import model.signing.visible.SignatureAspect;
 
-public class PDFVisibleAllPagesSigning implements SigningMode {
+public class PDFVisibleAllPagesSigning implements ISigningService {
 
 	private CertificatesHolder certificatesHolder;
 	private PAdESService service;
@@ -51,7 +52,7 @@ public class PDFVisibleAllPagesSigning implements SigningMode {
 	}
 
 	@Override
-	public void performSign(File file) throws FileNotFoundException, IOException {
+	public void sign(File file) throws FileNotFoundException, IOException {
 		System.out.println("Signing with visible signature on all pages");
 		InputStream resource = new FileInputStream(file);
 		String result = file.getAbsolutePath() + "-semnat.pdf";

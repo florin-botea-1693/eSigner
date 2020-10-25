@@ -1,4 +1,4 @@
-package model.signing;
+package services.signing;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,7 +25,7 @@ import model.signing.visible.SignatureAspect;
  * ia totul de-a gata configurat si semneaza
  */
 
-public class PDFVisibleSigning implements SigningMode {// class asta se instantiaza o singura data in momentul in care intru pe semnare pdf si semnez ceva, nu si la semnare multi/semnare intre documente.
+public class PDFVisibleSigning implements ISigningService {// class asta se instantiaza o singura data in momentul in care intru pe semnare pdf si semnez ceva, nu si la semnare multi/semnare intre documente.
 	
 	private CertificatesHolder certificatesHolder;
 	private PAdESService service;
@@ -41,7 +41,7 @@ public class PDFVisibleSigning implements SigningMode {// class asta se instanti
 	}
 	
 	@Override
-	public void performSign(File file) throws FileNotFoundException, IOException 
+	public void sign(File file) throws FileNotFoundException, IOException 
 	{
 		System.out.println("Signing with visible signature");
 		InputStream resource = new FileInputStream(file);

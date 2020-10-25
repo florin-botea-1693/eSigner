@@ -26,15 +26,19 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import controller.PDFSigningController;
-import model.PdfSignerModel;
+import controller.CadesSigningController;
+import controller.PdfSigningController;
+import model.CadesSigningModel;
+import model.PdfSigningModel;
 import model.certificates.MSCAPICertificatesHolder;
 import tests.CPTest;
-import view.PDFSigningView;
+import view.CadesSigningView;
+import view.MainMenuView;
+import view.PdfSigningView;
 
 public class App {
 	
-	public static final JFrame frame = new JFrame();
+	public static final JFrame frame = new JFrame("eSigner - v.1.0");
 	private JFrame _frame;
 
 	/**
@@ -65,9 +69,11 @@ public class App {
 			public void run() {
 				try {
 					App app = new App();
-					app.frame.setVisible(true);
+					App.frame.setVisible(true);
 					// case 1
-					app.goToPDFSign();
+					App.goToMainMenu();
+					//app.goToPDFSign();
+					//app.goToCadesSign();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -99,26 +105,43 @@ public class App {
 		settings.add(generalSettingsBtn);
 	}
 
-	/*
-	public void goToMainMenu() {
-		view = new MainMenuView();
-		
-		((MainMenuView) view).getPDFSignBtn().addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				goToPDFSign();
-			}
-		});
-		
-		frame.setContentPane((Container) view);
-		frame.repaint();
+	
+	public static void goToMainMenu() {
+		MainMenuView view = new MainMenuView();
+
+		frame.setContentPane(view);
+		//frame.repaint();
 	}
-	*/
-	public void goToPDFSign() throws IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+	
+	public static void goToPDFSign() throws IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		MSCAPICertificatesHolder certificatesHolder = new MSCAPICertificatesHolder();
 	
-		PdfSignerModel model = new PdfSignerModel(certificatesHolder);
-		PDFSigningView view = new PDFSigningView();// remove argument, voi avea o metoda call initial in registet ce va pune un model-view in view
-		new PDFSigningController(model, view);
+		PdfSigningModel model = new PdfSigningModel(certificatesHolder);
+		PdfSigningView view = new PdfSigningView();// remove argument, voi avea o metoda call initial in registet ce va pune un model-view in view
+		new PdfSigningController(model, view);
+
+		/*
+		JPanel contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setLayout(new GridLayout(1, 2));
+		contentPane.add(view);
+		
+		frame.setContentPane(contentPane);
+		*/
+		//frame.setLayout(new GridLayout(1, 2)); // <--
+		frame.setContentPane(view); //frame.setContentPane(view);
+		//frame.add(new JPanel());
+		
+		frame.repaint();
+		frame.setVisible(true);
+	}
+	
+	public static void goToCadesSign() throws IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+		MSCAPICertificatesHolder certificatesHolder = new MSCAPICertificatesHolder();
+	
+		CadesSigningModel model = new CadesSigningModel(certificatesHolder);
+		CadesSigningView view = new CadesSigningView();// remove argument, voi avea o metoda call initial in registet ce va pune un model-view in view
+		new CadesSigningController(model, view);
 
 		/*
 		JPanel contentPane = new JPanel();
@@ -130,12 +153,14 @@ public class App {
 		*/
 		//frame.setLayout(new GridLayout(1, 2)); // <--
 		
-		frame.add(view); //frame.setContentPane(view);
+		frame.setContentPane(view); //frame.setContentPane(view);
 		//frame.add(new JPanel());
 		
 		frame.repaint();
 		frame.setVisible(true);
 	}
+	
+	
 	
 	public void goToGeneralSettings() {
 		/*

@@ -15,9 +15,9 @@ import eu.europa.esig.dss.model.pades.SignatureImageParameters;
 import eu.europa.esig.dss.model.pades.SignatureImageParameters.VisualSignatureAlignmentHorizontal;
 import eu.europa.esig.dss.model.pades.SignatureImageParameters.VisualSignatureAlignmentVertical;
 import eu.europa.esig.dss.model.pades.SignatureImageParameters.VisualSignaturePagePlacement;
+import model.PdfSigningModel;
 import model.certificates.AppCertificatesValidator;
 import model.certificates.Certificate;
-import model.signing.options.PdfSigningOptions;
 import model.signing.visible.options.SignaturePosition;
 import model.signing.visible.options.SignatureSize;
 import utils.RectangleContainer;
@@ -74,17 +74,17 @@ public abstract class SignatureAspect
 		return this.page;
 	}
 
-	public SignatureAspect(Certificate cert, PdfSigningOptions s)
+	public SignatureAspect(Certificate cert, PdfSigningModel model)
 	{
 		this.cert = cert;
-		this.isVisibleSerialNumber = s.isVisibleSN();
-		this.position = s.getPosition();
-		this.size = s.getSize();
-		this.reason = s.getReason();
-		this.location = s.getLocation();
-		this.organization = s.getOrganization();
-		this.customPosition = s.getCustomPosition();
-		this.page = s.getCustomPage();
+		this.isVisibleSerialNumber = model.isVisibleSN();
+		this.position = model.getPosition();
+		this.size = model.getSize();
+		this.reason = model.getReason();
+		this.location = model.getLocation();
+		this.organization = model.getOrganization();
+		this.customPosition = model.getCustomPosition();
+		this.page = model.getCustomPage();
 		System.out.println("custom page is " + this.page);
 	}
 	

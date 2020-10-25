@@ -25,9 +25,9 @@ import eu.europa.esig.dss.model.pades.SignatureImageTextParameters;
 import eu.europa.esig.dss.model.pades.SignatureImageTextParameters.SignerTextVerticalAlignment;
 import eu.europa.esig.dss.pdf.pdfbox.visible.defaultdrawer.ImageMerger;
 import eu.europa.esig.dss.pdf.pdfbox.visible.defaultdrawer.ImageTextWriter;
+import model.PdfSigningModel;
 import model.certificates.AppCertificatesValidator;
 import model.certificates.Certificate;
-import model.signing.options.PdfSigningOptions;
 import model.signing.visible.options.SignaturePosition;
 import model.signing.visible.options.SignatureSize;
 import text.FitTextInRectangle;
@@ -53,9 +53,9 @@ public class AdobeLikeSignatureAspect extends SignatureAspect
 	private SignatureImageTextParameters tp = new SignatureImageTextParameters();
 	private FormattableString stringFormatter;
 	
-	public AdobeLikeSignatureAspect(Certificate cert, PdfSigningOptions s) 
+	public AdobeLikeSignatureAspect(Certificate cert, PdfSigningModel model) 
 	{
-		super(cert, s);
+		super(cert, model);
 		
 		stringFormatter = new FormattableString();
 		stringFormatter.setDelimiters(new String[] {" ", "-", ",", ".", "@"});
@@ -124,6 +124,13 @@ public class AdobeLikeSignatureAspect extends SignatureAspect
 		formattedRightText = stringFormatter.fitInRatio(rightText, sip.getWidth()/2, sip.getHeight());
 		leftFontSize = stringFormatter.getFontSizeToMatchHeight(formattedLeftText, sip.getHeight());
 		rightFontSize = stringFormatter.getFontSizeToMatchHeight(formattedRightText, sip.getHeight());
+		
+		AdobeLikeSignatureAspect._cert = this.cert;
+		AdobeLikeSignatureAspect._isVisibleSerialNumber = this.isVisibleSerialNumber;
+		AdobeLikeSignatureAspect._location = this.location;
+		AdobeLikeSignatureAspect._organization = this.organization;
+		AdobeLikeSignatureAspect._reason = this.reason;
+		AdobeLikeSignatureAspect._size = this.size;
 	}
 	
 	protected void refresh()

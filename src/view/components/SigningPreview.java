@@ -1,4 +1,4 @@
-package view;
+package view.components;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -14,6 +14,9 @@ import java.awt.event.ComponentListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -54,7 +57,8 @@ public class SigningPreview extends JPanel
 	private int file_index = 0;
 	private int page_index = 0;
 	private SignaturePosition signaturePosition;
-	
+	private volatile ArrayList<ArrayList<BufferedImage>> cachedPreviews = new ArrayList<ArrayList<BufferedImage>>();
+	private CacheThread cacheThread;
 
 	public SigningPreview()
 	{
@@ -107,13 +111,17 @@ public class SigningPreview extends JPanel
 	
 	public void addFiles(File[] files)
 	{
+		// if (cacheThread != null) cacheThread.stop();
+		// cacheThread = new CacheThread();
+		cachedPreviews.clear();
+		
 		this.files = files;
 		// add range, set file to 1
 		try {
 			setLoading(true);
 			this.range_document.setMaximum(files.length -1);
 			this.setPreviewDocument(0, true);
-			this.setPreviewPage(0, true);
+			// new Thread(cacheThread).start();;
 		} catch (IOException e) {
 			e.printStackTrace();
 			ImageIcon imageIcon = new ImageIcon();
@@ -128,6 +136,7 @@ public class SigningPreview extends JPanel
 		if (this.file_index == file_index && !force)
 			return;
 		
+		System.out.println("previewDoc");
 		this.file_index = file_index;
 		this.label_document.setText((file_index + 1) + "/" + this.files.length);
 		File file = files[file_index];
@@ -142,15 +151,25 @@ public class SigningPreview extends JPanel
 		if (this.page_index  == page && !force)
 			return;
 		
+		System.out.println("previewPage");
 		this.label_page.setText((page + 1) + "/" + this.previewedPdf.getNumberOfPages());
 		this.page_index = page;
+		
+		if (cachedPreviews.size() > file_index && cachedPreviews.get(file_index).size() > page_index)
+		{
+			System.out.println("loading from cache " + file_index + ", " + page_index);
+			backgroundPanel.setImage(cachedPreviews.get(file_index).get(page_index));
+			setLoading(false);
+			return;
+		}
+		
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
 					setLoading(true);
 					PDFRenderer reader = new PDFRenderer(previewedPdf);
-					BufferedImage bim = reader.renderImageWithDPI(page, 300, ImageType.RGB);
+					BufferedImage bim = reader.renderImageWithDPI(page, 150, ImageType.RGB);
 					backgroundPanel.setImage(bim);
 					setLoading(false);
 				} catch (IOException e) {
@@ -163,7 +182,7 @@ public class SigningPreview extends JPanel
 			}
 		}).start();
 	}
-
+	
 	public void setDraggableSignatureFieldPosition(SignaturePosition selectedItem)
 	{
 		this.signaturePosition = selectedItem;
@@ -209,5 +228,42 @@ public class SigningPreview extends JPanel
 		loadingPanel.setVisible(b);
 		range_document.setEnabled(!b);
 		range_page.setEnabled(!b);
+	}
+	
+	private class CacheThread implements Runnable
+	{
+		private boolean stop = false;
+		@Override
+		public void run() {
+			cachedPreviews.clear();
+			for (int i=0; i<files.length; i++) {
+				cachedPreviews.add(new ArrayList<BufferedImage>()); // adaugam echivalentul documentului
+				File file = files[i];
+				PDDocument doc = null;
+				try {
+					doc = PDDocument.load(file);
+				} catch (IOException e) {}
+				if (doc != null)
+				{
+					PDFRenderer reader = new PDFRenderer(doc);
+					for (int page=0; page<doc.getNumberOfPages(); page++) { // acum echivalentul paginii
+						if (stop) return;
+						BufferedImage bim;
+						try {
+							System.out.println(i + ", " + page);
+							bim = reader.renderImageWithDPI(page, 150, ImageType.RGB);
+							cachedPreviews.get(i).add(bim);
+						} catch (IOException e) {
+							ImageIcon imageIcon = new ImageIcon();
+							cachedPreviews.get(i).add((BufferedImage) imageIcon.getImage());
+						}
+					}
+				}
+			}
+		}
+		
+		public void stop() {
+			this.stop = true;
+		}
 	}
 }

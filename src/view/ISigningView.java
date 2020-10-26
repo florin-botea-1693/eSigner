@@ -2,6 +2,7 @@ package view;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -19,4 +20,5 @@ public interface ISigningView
 	public JComboBox<Certificate> select_certificates();
 	public JButton button_sign();
 	public JLabel label_serialNumber();
+	public JComponent spinner_loadingCertificates();
 }

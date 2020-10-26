@@ -17,6 +17,7 @@ import main.App;
 import model.SigningModel;
 import model.certificates.AppCertificatesValidator;
 import model.certificates.Certificate;
+import model.certificates.MSCAPICertificatesHolder;
 import model.certificates.ValidationResult;
 import services.signing.ISigningService;
 import view.ICadesSigningView;
@@ -36,11 +37,20 @@ public abstract class SigningController
 		view.getLog().getTextPane().setEditable(false);
 		view.setOpaque(false);
 		
-		Object[] c = ((ArrayList<Certificate>) model.getCertificatesHolder().getCertificates()).toArray();
-		ComboBoxModel certificates = new DefaultComboBoxModel(c);
-		view.select_certificates().setModel(certificates);
-		view.select_certificates().setSelectedItem(model.getCertificatesHolder().getSelectedCertificate());
-		view.label_serialNumber().setText("Serial Number: " + model.getCertificatesHolder().getSelectedCertificate().getSerialNumber());
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				view.spinner_loadingCertificates().setVisible(true);
+				MSCAPICertificatesHolder certificatesHolder = new MSCAPICertificatesHolder();
+				model.setCertificatesHolder(certificatesHolder);
+				Object[] c = ((ArrayList<Certificate>) certificatesHolder.getCertificates()).toArray();
+				ComboBoxModel certificates = new DefaultComboBoxModel(c);
+				view.select_certificates().setModel(certificates);
+				view.spinner_loadingCertificates().setVisible(false);
+				view.select_certificates().setSelectedItem(certificatesHolder.getSelectedCertificate());
+				view.label_serialNumber().setText("Serial Number: " + certificatesHolder.getSelectedCertificate().getSerialNumber());
+			}
+		}).start();
 		
 		view.button_chooseFile().addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -64,6 +74,7 @@ public abstract class SigningController
 		
 		view.select_certificates().addActionListener (new ActionListener () {
 		    public void actionPerformed(ActionEvent e) {
+		    	if (model.getCertificatesHolder().getSelectedCertificate() == null) return;
 		    	Certificate x = (Certificate) view.select_certificates().getSelectedItem();
 		    	model.setSigningCertificate((Certificate) view.select_certificates().getSelectedItem());;
 		    	view.label_serialNumber().setText("Serial Number: " + model.getCertificatesHolder().getSelectedCertificate().getSerialNumber());

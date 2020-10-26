@@ -46,9 +46,15 @@ abstract public class SigningModel
 	
 	public void setSigningCertificate(Certificate selectedItem) 
 	{
+		if (selectedItem == null)
+			return;
 		System.out.println("signing certificate is " + selectedItem.toString());
-		Certificate oldVal = this.certificatesHolder.getSelectedCertificate();
+		//Certificate oldVal = this.certificatesHolder.getSelectedCertificate();
 		certificatesHolder.selectCertificate(selectedItem);
 		//observed.firePropertyChange("selectedCertificate", oldVal, selectedItem);
+	}
+
+	public void setCertificatesHolder(MSCAPICertificatesHolder certificatesHolder2) {
+		this.certificatesHolder = certificatesHolder2;
 	}
 }

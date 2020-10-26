@@ -10,6 +10,7 @@ import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -163,6 +164,11 @@ public class CadesSigningView extends JPanel implements ICadesSigningView
 	@Override
 	public JLabel label_serialNumber() {
 		return this.chooseFileAndCertificate.label_serialNumber;
+	}
+
+	@Override
+	public JComponent spinner_loadingCertificates() {
+		return this.chooseFileAndCertificate.spinner_loadingCertificates;
 	}
 
 }

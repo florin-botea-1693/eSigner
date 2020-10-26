@@ -30,7 +30,9 @@ import controller.CadesSigningController;
 import controller.PdfSigningController;
 import model.CadesSigningModel;
 import model.PdfSigningModel;
+import model.certificates.CertificatesHolder;
 import model.certificates.MSCAPICertificatesHolder;
+import model.certificates.NullCertificatesHolder;
 import tests.CPTest;
 import view.CadesSigningView;
 import view.MainMenuView;
@@ -59,19 +61,20 @@ public class App {
 		catch (ClassNotFoundException e) {e.printStackTrace();}
 		catch (InstantiationException e) {e.printStackTrace();}
 		catch (IllegalAccessException e) {e.printStackTrace();}
-		/*
+		
 		PrintStream out = new PrintStream(
 		new FileOutputStream("output.txt", true), true);
 		System.setOut(out);
 		System.setErr(out);
-		*/
+		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
 					App app = new App();
-					App.frame.setVisible(true);
+					
 					// case 1
 					App.goToMainMenu();
+					App.frame.setVisible(true);
 					//app.goToPDFSign();
 					//app.goToCadesSign();
 				} catch (Exception e) {
@@ -113,9 +116,9 @@ public class App {
 		//frame.repaint();
 	}
 	
-	public static void goToPDFSign() throws IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-		MSCAPICertificatesHolder certificatesHolder = new MSCAPICertificatesHolder();
-	
+	public static void goToPDFSign() throws IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException 
+	{
+		CertificatesHolder certificatesHolder = new NullCertificatesHolder();
 		PdfSigningModel model = new PdfSigningModel(certificatesHolder);
 		PdfSigningView view = new PdfSigningView();// remove argument, voi avea o metoda call initial in registet ce va pune un model-view in view
 		new PdfSigningController(model, view);
@@ -137,7 +140,7 @@ public class App {
 	}
 	
 	public static void goToCadesSign() throws IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-		MSCAPICertificatesHolder certificatesHolder = new MSCAPICertificatesHolder();
+		CertificatesHolder certificatesHolder = new NullCertificatesHolder();
 	
 		CadesSigningModel model = new CadesSigningModel(certificatesHolder);
 		CadesSigningView view = new CadesSigningView();// remove argument, voi avea o metoda call initial in registet ce va pune un model-view in view

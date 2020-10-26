@@ -10,6 +10,7 @@ import java.io.IOException;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -300,5 +301,10 @@ public class PdfSigningView extends JPanel implements IPdfSigningView
 	@Override
 	public JLabel label_serialNumber() {
 		return this.chooseFileAndCertificate.label_serialNumber;
+	}
+	
+	@Override
+	public JComponent spinner_loadingCertificates() {
+		return this.chooseFileAndCertificate.spinner_loadingCertificates;
 	}
 }

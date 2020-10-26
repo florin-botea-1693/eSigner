@@ -4,6 +4,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -19,7 +20,7 @@ public class ChooseFileAndCertificate extends JPanel
 	public final JComboBox select_certificates;
 	public final JLabel label_serialNumber;
 	public final JCheckBox check_visibleSN;
-	
+	public final JLabel spinner_loadingCertificates;
 
 	public ChooseFileAndCertificate() 
 	{
@@ -39,10 +40,13 @@ public class ChooseFileAndCertificate extends JPanel
 		
 		this.check_visibleSN = new JCheckBox("Visible SN");
 		
+		this.spinner_loadingCertificates = new JLabel(new ImageIcon("ajax-loader.gif"));
+		spinner_loadingCertificates.setVisible(false);
 		
 		this.add(input_choosedFiles, "cell 0 0,growx");
 		this.add(button_chooseFile, "cell 0 0");
 		this.add(select_certificates, "cell 0 1,growx");
+		this.add(spinner_loadingCertificates, "cell 0 1, hidemode 3");
 		this.add(label_serialNumber, "cell 0 2");
 		this.add(Box.createGlue(), "cell 0 2,grow");
 		this.add(this.check_visibleSN, "cell 0 2");
